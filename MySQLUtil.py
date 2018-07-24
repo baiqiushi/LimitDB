@@ -24,7 +24,23 @@ def close():
 
 
 def GetCoordinate(tableName, keyword, limit):
-    sql="select x, y from limitdb." + tableName + " where match(text) against (\'+" + keyword + "\' in boolean mode)"
+    sql = "select x, y from limitdb." + tableName + " where match(text) against (\'+" + keyword + "\' in boolean mode)"
+    if limit >= 0:
+        sql += " limit " + str(limit)
+    return query(sql)
+
+
+def queryLimit(tableName, keyword, limit):
+    sql = "select x, y from limitdb." + tableName + " where match(text) against (\'+" + keyword + "\' in boolean mode)"
+    if limit >= 0:
+        sql += " limit " + str(limit)
+    return query(sql)
+
+
+def queryLimitOrderBy(tableName, keyword, limit, orderBy):
+    sql = "select x, y from limitdb." + tableName + " where match(text) against (\'+" + keyword + "\' in boolean mode)"
+    if not orderBy:
+        sql += " order by " + orderBy
     if limit >= 0:
         sql += " limit " + str(limit)
     return query(sql)

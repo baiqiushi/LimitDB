@@ -46,7 +46,7 @@ def testSubsetForKeyword(p_tableName, p_keyword):
 
 
 print '================================================='
-print '  ' + database + '  Experiments - 1 Test Subset'
+print '  ' + database + '  Experiments - 2 Test Subset'
 print '================================================='
 
 for keyword in keywords:
