@@ -23,6 +23,10 @@ def close():
     conn.close()
 
 
+def commit():
+    conn.commit()
+
+
 def GetCoordinate(tableName, keyword, limit):
     sql = "select x, y from limitdb." + tableName + " where match(text) against (\'+" + keyword + "\' in boolean mode)"
     if limit >= 0:

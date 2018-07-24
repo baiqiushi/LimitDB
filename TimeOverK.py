@@ -5,6 +5,10 @@ database = 'MySQL'
 tableName = 'coordtweets'
 keywords = ['job', 'water', 'soccer']
 orderyBy = 'id'
+# Set cache size to be 0 for this session
+# deprecated since MySQL 8.0
+# db.query("SET SESSION query_cache_size=0;")
+# db.commit()
 
 
 def testTimeOverKForKeyword(p_tableName, p_keyword):
@@ -20,9 +24,9 @@ def testTimeOverKForKeyword(p_tableName, p_keyword):
         end = time.time()
         executionTime.append([k, (end - start)])
         # send dummy query to clear cache/buffer of DB
-        print '... sending dummy query ...'
-        sql = 'select * from limitdb.dummy_table'
-        db.query(sql)
+        # print '... sending dummy query ...'
+        # sql = 'select * from limitdb.dummy_table'
+        # db.query(sql)
 
     print '---------------------------------'
     for et in executionTime:
@@ -52,9 +56,9 @@ def testTimeOverKandOrderByForKeyword(p_tableName, p_keyword, p_orderBy):
         end = time.time()
         executionTime.append([k, (end - start)])
         # send dummy query to clear cache/buffer of DB
-        print '... sending dummy query ...'
-        sql = 'select * from limitdb.dummy_table'
-        db.query(sql)
+        # print '... sending dummy query ...'
+        # sql = 'select * from limitdb.dummy_table'
+        # db.query(sql)
 
     print '---------------------------------'
     for et in executionTime:
