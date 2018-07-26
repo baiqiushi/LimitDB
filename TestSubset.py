@@ -1,8 +1,10 @@
-import numpy as np
-import MySQLUtil as db
-# import time
+from MySQLUtil import MySQLUtil
+import time
 import math
+from sets import Set
 
+
+db = MySQLUtil()
 database = 'MySQL'
 tableName = 'coordtweets'
 keywords = ['job', 'water', 'soccer']
@@ -10,18 +12,39 @@ keywords = ['job', 'water', 'soccer']
 
 # p_limit1 < p_limit2, check whether p_limit1 is subset of p_limit2
 def isSubsetFromDB(p_tableName, p_keyword, p_limit1, p_limit2):
-    # start = time.time()
-    ar1 = np.array(db.GetCoordinate(p_tableName, p_keyword, p_limit1))
-    ar2 = np.array(db.GetCoordinate(p_tableName, p_keyword, p_limit2))
-    # end = time.time()
-    # print 'DB query time: ', (end - start), ' s'
-    # start = time.time()
-    for c in ar1:
-        if c not in ar2:
-            return False
-    # end = time.time()
-    # print 'Computation time: ', (end - start), ' s'
-    return True
+    queryTime = 0
+    # query p_limit1 set
+    start = time.time()
+    set1 = Set(db.GetID(p_tableName, p_keyword, p_limit1))
+    end = time.time()
+    queryTime += (end - start)
+    # restart mysql
+    start = time.time()
+    db.restart()
+    end = time.time()
+    print 'wait for ', str(end - start), ' seconds for db to restart'
+    # query p_limit2 set
+    start = time.time()
+    set2 = Set(db.GetID(p_tableName, p_keyword, p_limit2))
+    end = time.time()
+    queryTime += (end - start)
+    print 'DB query time: ', queryTime, ' s'
+    # Debug #
+    # print '-------------------------------------'
+    # print set1
+    # print '-------------------------------------'
+    # print '-------------------------------------'
+    # print set2
+    # print '-------------------------------------'
+    # Debug #
+    start = time.time()
+    res = set1.issubset(set2)
+    end = time.time()
+    print 'Computation time: ', (end - start), ' s'
+    if res:
+        return True
+    else:
+        return False
 
 
 def testSubsetForKeyword(p_tableName, p_keyword):
