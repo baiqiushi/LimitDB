@@ -36,8 +36,8 @@ def randomNKeywordsByFrequencyRange(p_min_freq, p_max_freq, p_n):
 
 database = 'MySQL'
 tableName = 'coordtweets'
-keywords = pick100keywords()
-ks = [1000, 10000, 50000, 100000, 500000, 1000000, 2000000, 3000000]
+keywords = [('job', 3100000)]  # pick100keywords()
+ks = [1000, 5000, 10000, 50000, 100000, 500000, 1000000, 2000000, 3000000]
 orderBy = 'id'
 
 
@@ -130,7 +130,7 @@ for k in ks:
     # restart the MySQL server
     db.restart()
 print '================================================='
-print '  ' + database + '  Experiments - 3.2 Time of limit K & order by ' + orderBy
+print '  ' + database + '  Experiments - 3.2 Results of limit K & order by ' + orderBy
 print '================================================='
 print 'table: ', tableName
 print 'keywords: ', keywords

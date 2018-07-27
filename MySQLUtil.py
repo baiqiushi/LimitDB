@@ -28,7 +28,7 @@ class MySQLUtil:
         if not self.conn.is_connected():
             self.conn = mysql.connector.connect(**self.config)
             self.cursor = self.conn.cursor()
-
+        print '[MySQLUtil]--> ', sql
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
@@ -59,7 +59,7 @@ class MySQLUtil:
 
     def queryLimitOrderBy(self, tableName, keyword, limit, orderBy):
         sql = "select x, y from limitdb." + tableName + " where match(text) against (\'+" + keyword + "\' in boolean mode)"
-        if not orderBy:
+        if orderBy:
             sql += " order by " + orderBy
         if limit >= 0:
             sql += " limit " + str(limit)
