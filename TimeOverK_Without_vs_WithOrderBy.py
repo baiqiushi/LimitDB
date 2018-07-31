@@ -1,4 +1,4 @@
-from MySQLUtil import MySQLUtil
+import DatabaseFactory
 import copy
 import random
 import time
@@ -8,7 +8,7 @@ import KeywordsUtil
 database = 'MySQL'
 tableName = 'coordtweets'
 orderBy = 'id'
-num_runs = 2
+num_runs = 3
 dummy_sql = 'select count(1) from (select t.text from limitdb.dummy_table t where t.id < 865350497200371700) p ' \
                     'where p.text like \'%lo%\' '
 frequencyLevels = [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 2000000, 3000000]
@@ -43,11 +43,7 @@ def execTimeLimitKAndOrderBy(p_db, p_tableName, p_keyword, p_k, p_orderBy):
 
 def run(p_database, p_tableName, p_withOrderBy):
 
-    if p_database == 'MySQL':
-        db = MySQLUtil()
-    else:
-        print 'Database: ', p_database, ' is not supported now!'
-        return
+    db = DatabaseFactory.getDatabase(p_database)
 
     # [k, avg_time(word[1]), avg_time(word[2]), ..., avg_time(word[N])]
     execTime_All = []
