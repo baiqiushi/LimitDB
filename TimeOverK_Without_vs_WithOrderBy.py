@@ -3,15 +3,16 @@ import copy
 import random
 import time
 import KeywordsUtil
+import Conf
 
+# Common config
+database = Conf.DATABASE
+tableName = Conf.TABLE
+orderBy = Conf.ORDER_BY
 
-database = 'MySQL'
-tableName = 'coordtweets'
-orderBy = 'id'
+# Config for this test
 num_runs = 3
-dummy_sql = 'select count(1) from (select t.text from limitdb.dummy_table t where t.id < 865350497200371700) p ' \
-                    'where p.text like \'%lo%\' '
-frequencyLevels = [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 2000000, 3000000]
+frequencyLevels = [100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000, 2000000]
 # k value percentage of the keyword frequency
 k_percentages = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
@@ -60,7 +61,7 @@ def run(p_database, p_tableName, p_withOrderBy):
 
             # send dummy queries to warm up the database
             startT = time.time()
-            db.query(dummy_sql)
+            db.queryDummy()
             endT = time.time()
             print 'dummy query takes ', str(endT - startT), ' seconds.'
 
@@ -86,6 +87,9 @@ def run(p_database, p_tableName, p_withOrderBy):
 
         execTime_All.append(execTime_k)
 
+        # print all results until now
+        print_execTime(execTime_All)
+
     return execTime_All
 
 
@@ -98,9 +102,11 @@ def print_execTime(execTime):
 print '================================================='
 print '  ' + database + '  Experiments - 3.1 Time of limit K'
 print '================================================='
-print 'table: ', tableName
-print 'keywords: ', keywords
-print 'K values: ', k_percentages
+print 'table:', tableName
+print 'keywords:', map(lambda k: k[0], keywords)
+print 'frequencies:', map(lambda k: k[1], keywords)
+print 'K values:', k_percentages
+print '# of runs per k:', num_runs
 print '-------------------------------------------------'
 
 execTime_without_orderBy = run(database, tableName, False)
@@ -108,18 +114,22 @@ execTime_without_orderBy = run(database, tableName, False)
 print '================================================='
 print '  ' + database + '  Results - 3.1 Time of limit K'
 print '================================================='
-print 'table: ', tableName
-print 'keywords: ', keywords
-print 'K values: ', k_percentages
+print 'table:', tableName
+print 'keywords:', map(lambda k: k[0], keywords)
+print 'frequencies:', map(lambda k: k[1], keywords)
+print 'K values:', k_percentages
+print '# of runs per k:', num_runs
 print '-------------------------------------------------'
 print_execTime(execTime_without_orderBy)
 
 print '================================================='
 print '  ' + database + '  Experiments - 3.2 Time of limit K & order by ' + orderBy
 print '================================================='
-print 'table: ', tableName
-print 'keywords: ', keywords
-print 'K values: ', k_percentages
+print 'table:', tableName
+print 'keywords:', map(lambda k: k[0], keywords)
+print 'frequencies:', map(lambda k: k[1], keywords)
+print 'K values:', k_percentages
+print '# of runs per k:', num_runs
 print '-------------------------------------------------'
 
 execTime_with_orderBy = run(database, tableName, True)
@@ -127,9 +137,11 @@ execTime_with_orderBy = run(database, tableName, True)
 print '================================================='
 print '  ' + database + '  Experiments - 3.2 Results of limit K & order by ' + orderBy
 print '================================================='
-print 'table: ', tableName
-print 'keywords: ', keywords
-print 'K values: ', k_percentages
+print 'table:', tableName
+print 'keywords:', map(lambda k: k[0], keywords)
+print 'frequencies:', map(lambda k: k[1], keywords)
+print 'K values:', k_percentages
+print '# of runs per k:', num_runs
 print '-------------------------------------------------'
 
 print_execTime(execTime_with_orderBy)

@@ -1,12 +1,15 @@
 import time
 import numpy as np
 import csv
-
+import Conf
 import DatabaseFactory
 import KeywordsUtil
 
-database = 'MySQL'
-tableName = 'coordtweets'
+# Common config
+database = Conf.DATABASE
+tableName = Conf.TABLE
+
+# Config for this test
 # Resolution of image
 res_x = 1920/4
 res_y = 1080/4

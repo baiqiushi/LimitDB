@@ -1,21 +1,14 @@
 import mysql.connector
 import os
 import sys
-
+import Conf
 import time
 from mysql.connector import DatabaseError
 
 
 class MySQLUtil:
     def __init__(self):
-        self.config = {
-          'user': 'root',
-          'password': '3979',
-          'host': 'localhost',
-          'database': 'limitdb',
-          'raise_on_warnings': True,
-          'use_pure': False,
-        }
+        self.config = Conf.MYSQL_CONFIG
         self.conn = 0
         self.cursor = 0
         self.open()
@@ -84,3 +77,32 @@ class MySQLUtil:
         if i > 10:
             raise DatabaseError
 
+    def queryDummy(self):
+        dummy_sql = Conf.MYSQL_DUMMY_SQL
+        return self.query(dummy_sql)
+
+    def queryLimitWordInCountOrderBy(self, p_min_count, p_max_count, p_limit, p_orderBy):
+        if p_orderBy == 'random':
+            p_orderBy = 'RAND()'
+        l_sql = 'SELECT word, count FROM limitdb.wordcount ' \
+                ' WHERE count >= ' + str(p_min_count) + \
+                '   and count < ' + str(p_max_count) + \
+                ' ORDER BY ' + p_orderBy + \
+                ' LIMIT ' + str(p_limit)
+        return self.query(l_sql)
+
+    def queryLimitWordNearCount(self, p_count, p_limit):
+        l_sql = 'SELECT word, count FROM limitdb.wordcount ' \
+                ' WHERE count >= ' + str(p_count / 2) + \
+                '   and count < ' + str(p_count * 2) + \
+                ' ORDER BY ABS(count - ' + str(p_count) + ') ' \
+                ' LIMIT ' + str(p_limit)
+        return self.query(l_sql)
+
+
+def test():
+    db = MySQLUtil()
+    result = db.queryLimitWordInCountOrderBy(10000, 30000, 20, 'random')
+    print result
+    result = db.queryLimitWordNearCount(2000000, 2)
+    print result

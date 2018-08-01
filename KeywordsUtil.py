@@ -1,7 +1,9 @@
-from MySQLUtil import MySQLUtil
+import Conf
 import random
+import DatabaseFactory
 
-db = MySQLUtil()
+database = Conf.DATABASE
+db = DatabaseFactory.getDatabase(database)
 
 
 def clean():
@@ -14,13 +16,7 @@ def clean():
 # p_n: number of keywords that is needed to pick
 # return: [(word, count), ...]
 def randomPickInFrequencyRange(p_min_freq, p_max_freq, p_n):
-    l_sql = 'SELECT p.word, p.count FROM ' \
-            '  (SELECT t.word, t.count FROM limitdb.wordcount t ' \
-            '    WHERE t.count >= ' + str(p_min_freq) + \
-            '      and t.count < ' + str(p_max_freq) + \
-            '  ) p ORDER BY RAND() ' \
-            'LIMIT ' + str(p_n)
-    results = db.query(l_sql)
+    results = db.queryLimitWordInCountOrderBy(p_min_freq, p_max_freq, p_n, 'random')
     return results
 
 
@@ -29,13 +25,7 @@ def randomPickInFrequencyRange(p_min_freq, p_max_freq, p_n):
 # p_n: number of keywords that is needed to pick
 # return: [(word, count), ...]
 def pickNearestKeywordToFrequency(p_freq, p_n):
-    l_sql = 'SELECT p.word, p.count FROM ' \
-            '  (SELECT t.word, t.count FROM limitdb.wordcount t ' \
-            '    WHERE t.count >= ' + str(p_freq / 2) + \
-            '      and t.count < ' + str(p_freq * 2) + \
-            '  ) p ORDER BY ABS(p.count - ' + str(p_freq) + ') ' \
-            'LIMIT ' + str(p_n)
-    results = db.query(l_sql)
+    results = db.queryLimitWordNearCount(p_freq, p_n)
     return results
 
 
@@ -45,13 +35,7 @@ def pickNearestKeywordToFrequency(p_freq, p_n):
 # p_n: number of keywords that is needed to pick
 # return: [(word, count), ...]
 def pickLowestInFrequencyRange(p_min_freq, p_max_freq, p_n):
-    l_sql = 'SELECT p.word, p.count FROM ' \
-            '  (SELECT t.word, t.count FROM limitdb.wordcount t ' \
-            '    WHERE t.count >= ' + str(p_min_freq) + \
-            '      and t.count < ' + str(p_max_freq) + \
-            '  ) p ORDER BY count ' \
-            'LIMIT ' + str(p_n)
-    results = db.query(l_sql)
+    results = db.queryLimitWordInCountOrderBy(p_min_freq, p_max_freq, p_n, 'count')
     return results
 
 
@@ -72,3 +56,7 @@ def pick100keywords():
     # shuffle the order of keywords
     random.shuffle(l_keywords)
     return l_keywords
+
+
+def test():
+    print pickNearestKeywordToFrequency(3000000, 1)
