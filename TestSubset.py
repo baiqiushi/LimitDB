@@ -17,7 +17,6 @@ def isSubsetFromDB(p_db, p_tableName, p_keyword, p_limit1, p_limit2):
     # query p_limit1 set
     start = time.time()
     set1 = Set(p_db.GetID(p_tableName, p_keyword, p_limit1))
-    print set1
     end = time.time()
     queryTime += (end - start)
     # restart database
@@ -28,17 +27,16 @@ def isSubsetFromDB(p_db, p_tableName, p_keyword, p_limit1, p_limit2):
     # query p_limit2 set
     start = time.time()
     set2 = Set(p_db.GetID(p_tableName, p_keyword, p_limit2))
-    print set2
     end = time.time()
     queryTime += (end - start)
     print 'DB query time: ', queryTime, ' s'
     # Debug #
-    # print '-------------------------------------'
-    # print set1
-    # print '-------------------------------------'
-    # print '-------------------------------------'
-    # print set2
-    # print '-------------------------------------'
+    print '-------------------------------------'
+    print set1
+    print '-------------------------------------'
+    print '-------------------------------------'
+    print set2
+    print '-------------------------------------'
     # Debug #
     start = time.time()
     res = set1.issubset(set2)

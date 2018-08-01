@@ -120,9 +120,17 @@ def test():
     db = AsterixDBUtil()
     result = db.GetID('coord_tweets', 'job', 10)
     print result
-    result = db.GetID('coord_tweets', 'job', 10)
+    db.restart()
+    result = db.queryDummy()
+    print result
+    result = db.GetCoordinate('coord_tweets', 'job', 10)
     print result
     result = db.queryLimitWordInCountOrderBy(10000, 30000, 20, 'random')
     print result
     result = db.queryLimitWordNearCount(2000000, 2)
     print result
+    result = db.queryLimit('coord_tweets', 'job', 10)
+    print result
+    result = db.queryLimitOrderBy('coord_tweets', 'job', 10, 'x')
+    print result
+
