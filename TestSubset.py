@@ -31,12 +31,12 @@ def isSubsetFromDB(p_db, p_tableName, p_keyword, p_limit1, p_limit2):
     queryTime += (end - start)
     print 'DB query time: ', queryTime, ' s'
     # Debug #
-    print '-------------------------------------'
-    print set1
-    print '-------------------------------------'
-    print '-------------------------------------'
-    print set2
-    print '-------------------------------------'
+    # print '-------------------------------------'
+    # print set1
+    # print '-------------------------------------'
+    # print '-------------------------------------'
+    # print set2
+    # print '-------------------------------------'
     # Debug #
     start = time.time()
     res = set1.issubset(set2)
