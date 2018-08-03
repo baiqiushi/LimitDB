@@ -99,6 +99,13 @@ class MySQLUtil:
                 ' LIMIT ' + str(p_limit)
         return self.query(l_sql)
 
+    def queryWordInCount(self, p_min_count, p_max_count):
+        l_sql = 'SELECT word, count FROM limitdb.wordcount ' \
+                ' WHERE count >= ' + str(p_min_count) + \
+                '   and count < ' + str(p_max_count) + \
+                ' ORDER BY count DESC'
+        return self.query(l_sql)
+
 
 def test():
     db = MySQLUtil()

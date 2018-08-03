@@ -39,6 +39,11 @@ def pickLowestInFrequencyRange(p_min_freq, p_max_freq, p_n):
     return results
 
 
+def pickAllInFrequencyRange(p_min_freq, p_max_freq):
+    results = db.queryWordInCount(p_min_freq, p_max_freq)
+    return results
+
+
 # Divide the frequency of keywords (> 1k) into 4 bins:
 # [> 100k], total 64, sample 64
 # [10k - 100k), total 927, sample 24

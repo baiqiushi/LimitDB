@@ -16,7 +16,11 @@ class AsterixDBUtil:
     def query(self, sql):
         print '[AsterixDBUtil]--> ', sql
         response = requests.post(self.url, data={'statement': sql})
-        return response.json()['results']
+        try:
+            results = response.json()['results']
+        except KeyError:
+            results = []
+        return results
 
     def close(self):
         pass
@@ -108,6 +112,18 @@ class AsterixDBUtil:
                 '   and count < ' + str(p_count * 2) + \
                 ' ORDER BY abs(count - ' + str(p_count) + ') ' \
                 ' LIMIT ' + str(p_limit)
+        # different from other DBs, results from AsterixDB are like this:
+        # [{u'count': 15534, u'word': u'advisor'}, ...]
+        results = self.query(l_sql)
+        # transform the array of json objects into pure array
+        results = map(lambda record: [record['word'], record['count']], results)
+        return results
+
+    def queryWordInCount(self, p_min_count, p_max_count):
+        l_sql = 'SELECT word, count FROM limitdb.wordcount ' \
+                ' WHERE count >= ' + str(p_min_count) + \
+                '   and count < ' + str(p_max_count) + \
+                ' ORDER BY count DESC'
         # different from other DBs, results from AsterixDB are like this:
         # [{u'count': 15534, u'word': u'advisor'}, ...]
         results = self.query(l_sql)

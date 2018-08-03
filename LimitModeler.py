@@ -9,7 +9,7 @@ import KeywordsUtil
 database = Conf.DATABASE
 tableName = Conf.TABLE
 
-# Config for this test
+# Config for this experiment
 # Resolution of image
 res_x = 1920/4
 res_y = 1080/4
