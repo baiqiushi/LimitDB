@@ -131,6 +131,25 @@ class AsterixDBUtil:
         results = map(lambda record: [record['word'], record['count']], results)
         return results
 
+    def queryCurveInCount(self, p_min_count, p_max_count):
+        l_sql = 'SELECT word, count, q5, q10, q15, q20, ' \
+                '       q25, q30, q35, q40, q45, q50, q55,' \
+                '       q60, q65, q70, q75, q80, q85, q90, q95 ' \
+                '  FROM limitdb.wordcurve ' \
+                ' WHERE count >= ' + str(p_min_count) + \
+                '   and count <= ' + str(p_max_count) + \
+                ' ORDER BY count DESC'
+        # different from other DBs, results from AsterixDB are like this:
+        # [{u'count': 15534, u'word': u'advisor', u'q5': 0.031, ...}, ...]
+        results = self.query(l_sql)
+        # transform the array of json objects into pure array
+        results = map(lambda record: [record['word'], record['count'], record['q5'], record['q10'], record['q15'],
+                                      record['q20'], record['q25'], record['q30'], record['q35'], record['q40'],
+                                      record['q45'], record['q50'], record['q55'], record['q60'], record['q65'],
+                                      record['q70'], record['q75'], record['q80'], record['q85'], record['q90'],
+                                      record['q95']], results)
+        return results
+
 
 def test():
     db = AsterixDBUtil()
