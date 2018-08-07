@@ -87,24 +87,24 @@ def generateCurves(p_database, p_tableName, p_min_freq, p_max_freq):
 
     return len(keywords) - skipped
 
-
-print '================================================='
-print '  ' + database + '  Experiments - 4.1 Curve Generating'
-print '================================================='
-print 'table:', tableName
-print 'frequency range:[', min_freq, ',', max_freq, ']'
-print 'resolution:', res_x, 'x', res_y
-print 'k_percentage:', map(lambda k_p: str(k_p) + '%', k_percentages)
-print '-------------------------------------------------'
-start = time.time()
-count = generateCurves(database, tableName, min_freq, max_freq)
-end = time.time()
-print '================================================='
-print '  ' + database + '  Results - 4.1 Curve Generating'
-print '================================================='
-print 'table:', tableName
-print 'frequency range:[', min_freq, ',', max_freq, ']'
-print 'resolution:', res_x, 'x', res_y
-print 'k_percentage:', map(lambda k_p: str(k_p) + '%', k_percentages)
-print '-------------------------------------------------'
-print 'Finished!', count, 'keywords processed,', end - start, 'seconds spent.'
+#
+# print '================================================='
+# print '  ' + database + '  Experiments - 4.1 Curve Generating'
+# print '================================================='
+# print 'table:', tableName
+# print 'frequency range:[', min_freq, ',', max_freq, ']'
+# print 'resolution:', res_x, 'x', res_y
+# print 'k_percentage:', map(lambda k_p: str(k_p) + '%', k_percentages)
+# print '-------------------------------------------------'
+# start = time.time()
+# count = generateCurves(database, tableName, min_freq, max_freq)
+# end = time.time()
+# print '================================================='
+# print '  ' + database + '  Results - 4.1 Curve Generating'
+# print '================================================='
+# print 'table:', tableName
+# print 'frequency range:[', min_freq, ',', max_freq, ']'
+# print 'resolution:', res_x, 'x', res_y
+# print 'k_percentage:', map(lambda k_p: str(k_p) + '%', k_percentages)
+# print '-------------------------------------------------'
+# print 'Finished!', count, 'keywords processed,', end - start, 'seconds spent.'
