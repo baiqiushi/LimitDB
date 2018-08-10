@@ -54,6 +54,8 @@ class AsterixDBUtil:
         results = self.query(sql)
         # transform the array of json objects into pure array
         results = map(lambda record: record['count'], results)
+        if len(results) < 1:
+            return 0
         return results[0]
 
     def queryLimit(self, tableName, keyword, limit):

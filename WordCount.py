@@ -30,4 +30,6 @@ def collectWordsCounts():
             print "Total time:", t1 - t0, "Progress:", str(progress * 100 / len(keywords)) + '%'
 
 
-collectWordsCounts()
+# collectWordsCounts()
+
+print db.GetCount(tableName, 't-storm')
