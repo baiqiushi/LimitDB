@@ -44,6 +44,11 @@ def pickAllInFrequencyRange(p_min_freq, p_max_freq):
     return results
 
 
+def randomPickInCurveGroup(p_group, p_n):
+    results = db.queryLimitWordInCurveGroupOrderBy(p_group, p_n, 'random')
+    return results
+
+
 # Divide the frequency of keywords (> 1k) into 4 bins:
 # [> 100k], total 64, sample 64
 # [10k - 100k), total 927, sample 24

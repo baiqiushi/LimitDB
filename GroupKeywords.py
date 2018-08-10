@@ -45,9 +45,16 @@ def getCurvesOfKeywords(p_min_freq, p_max_freq):
     return results
 
 
+# get the curves data for given frequency range
+# [keyword, frequency, q(5%), q(10%), ..., q(95%), len, mean, std, var]
+def getAnalyzedCurvesOfKeywords(p_min_freq, p_max_freq):
+    results = db.queryAnalyzedCurveInCount(p_min_freq, p_max_freq)
+    return results
+
+
 # plot given p_curves into one image
 # p_curves: in the format as [keyword, frequency, q(5%), q(10%), ..., q(95%)]
-def plotCurves(p_pp, p_curves, p_title, p_showLegend=False):
+def plotCurves(p_pp, p_curves, p_title, p_showLegend=True):
     plt.figure()
     for curve in p_curves:
         plt.plot(k_percentage, curve[2:21], label=curve[0])
@@ -147,7 +154,7 @@ def groupByFrequencyKMeans(p_min_freq, p_max_freq, p_k=30):
     j = i
     while j < len(l_km.labels_):
         l_group_label = l_km.labels_[i]
-        l_x_label = l_km.labels_[i]
+        l_x_label = l_km.labels_[j]
         while l_x_label == l_group_label:
             j += 1
             if j >= len(l_km.labels_):
@@ -198,6 +205,26 @@ def analyzeCurveByDensityAndSkewness(p_min_freq, p_max_freq):
             l_var = np.var(nonZeroH)
         curve.extend([l_len, l_mean, l_std, l_var])
     writeOutCurves(l_curves, 'keyword_curves_analyzed.csv')
+
+
+def groupByDensityAndSkewnessKMeans(p_min_freq, p_max_freq, p_k=30):
+
+    # get all curves
+    l_curves = getAnalyzedCurvesOfKeywords(p_min_freq, p_max_freq)
+
+    # kmeans clustering by [mean, std] of each keyword
+    l_vectors = np.array(map(lambda curve: [curve[22], curve[23]], l_curves))
+    l_km = KMeans(n_clusters=p_k)
+    l_km.fit(l_vectors)
+
+    # plot the same labeled curves in one plot
+    pp = PdfPages('groupByDensityAndSkewnessKMeans.pdf')
+    plotCurvesByLabels(pp, l_curves, l_km.labels_)
+    pp.close()
+
+    # write the labeled curves to csv file
+    l_labeled_curves = tagLabels(l_curves, l_km.labels_)
+    writeOutCurves(l_labeled_curves, 'keyword_curves_grouped_density.csv')
 
 
 def plotCurvesByLabels(p_pp, p_curves, p_labels):
@@ -293,8 +320,9 @@ def groupByCurves(p_min_freq, p_max_freq, p_k=30):
 # print 'Total time:', end - start
 
 
-# groupByCurves(min_freq, max_freq, 100)
-analyzeCurveByDensityAndSkewness(min_freq, max_freq)
+groupByCurves(min_freq, max_freq, 100)
+# analyzeCurveByDensityAndSkewness(min_freq, max_freq)
+# groupByDensityAndSkewnessKMeans(min_freq, max_freq, 100)
 
 
 db.close()
