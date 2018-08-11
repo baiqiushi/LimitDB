@@ -3,7 +3,8 @@
 # ===========================
 
 # Common config
-DATABASE = 'AsterixDB'
+# Options: MySQL AsterixDB PostgreSQL
+DATABASE = 'PostgreSQL'
 TABLE = 'coord_tweets'
 ORDER_BY = 'id'
 
@@ -30,8 +31,8 @@ MYSQL_DUMMY_SQL = 'select count(1) from (select t.text from limitdb.dummy_table 
 # PostgreSQL config
 POSTGRESQL_CONFIG = {
     'host': 'localhost',
-    'user': 'white',
-    'password': '3979',
+    'user': 'postgres',
+    'password': 'postgres',
     'database': 'limitdb'
 }
 
