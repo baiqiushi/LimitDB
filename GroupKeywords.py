@@ -1,9 +1,8 @@
 import csv
-
 import Conf
-import CurveGenerator
 import DatabaseFactory
 import KeywordsUtil
+import QualityUtil
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import time
@@ -22,9 +21,10 @@ max_freq = 4000000
 unit_freq = 5000
 max_density = 100
 
-# GroupByFrequencyKMeans
-K = 30
-
+# KMeans parameter
+K = 100
+# DBSCAN parameter
+EPS = 0.3
 
 db = DatabaseFactory.getDatabase(database)
 keywords = KeywordsUtil.pickAllInFrequencyRange(min_freq, max_freq)
@@ -57,7 +57,7 @@ def getAnalyzedCurvesOfKeywords(p_min_freq, p_max_freq):
 def plotCurves(p_pp, p_curves, p_title, p_showLegend=True):
     plt.figure()
     for curve in p_curves:
-        plt.plot(k_percentage, curve[2:21], label=curve[0])
+        plt.plot(k_percentage, curve[2:21], label=(curve[0] + ":" + str(curve[1])))
     plt.xlabel('K Percentage')
     plt.ylabel('Quality')
     plt.title(p_title)
@@ -124,14 +124,14 @@ def groupByFrequencyDBSCAN():
     # array of frequencies of keywords
     l_freqs = np.array(map(lambda kw: [kw[1], 0], keywords)).reshape(-1, 1)
     print l_freqs
-    l_dbscan = DBSCAN().fit(l_freqs)
+    l_dbscan = DBSCAN(eps=0.3).fit(l_freqs)
     print l_dbscan
     print l_dbscan.labels_
     print l_dbscan.components_
     print l_dbscan.core_sample_indices_
 
 
-def groupByFrequencyKMeans(p_min_freq, p_max_freq, p_k=30):
+def groupByFrequencyKMeans(p_k=100):
 
     pp = PdfPages('groupByFrequencyKMeans.pdf')
 
@@ -181,6 +181,8 @@ def groupByFrequencyKMeans(p_min_freq, p_max_freq, p_k=30):
 
 
 def analyzeCurveByDensityAndSkewness(p_min_freq, p_max_freq):
+    print "Start analyzing the curves of keywords [" + str(p_min_freq) + ", "\
+          + str(p_max_freq) + "] by density and skewness......"
     # get all curves
     l_curves = getCurvesOfKeywords(p_min_freq, p_max_freq)
     # get mean, std, variation of each keyword's perfect image
@@ -196,7 +198,7 @@ def analyzeCurveByDensityAndSkewness(p_min_freq, p_max_freq):
             l_std = 0.0
             l_var = 0.0
         else:
-            H = CurveGenerator.hashByNumpy(ar)
+            H = QualityUtil.coordinatesToImage(ar)
             # only keep the non zero cells
             nonZeroH = H[np.nonzero(H)]
             l_len = len(nonZeroH)
@@ -204,13 +206,16 @@ def analyzeCurveByDensityAndSkewness(p_min_freq, p_max_freq):
             l_std = np.std(nonZeroH)
             l_var = np.var(nonZeroH)
         curve.extend([l_len, l_mean, l_std, l_var])
+    print "Finished analyzing the curves of keywords [" + str(p_min_freq) + ", " \
+          + str(p_max_freq) + "] by density and skewness !"
     writeOutCurves(l_curves, 'keyword_curves_analyzed.csv')
+    return l_curves
 
 
-def groupByDensityAndSkewnessKMeans(p_min_freq, p_max_freq, p_k=30):
+def groupByDensityAndSkewnessKMeans(p_min_freq, p_max_freq, p_k=100):
 
-    # get all curves
-    l_curves = getAnalyzedCurvesOfKeywords(p_min_freq, p_max_freq)
+    # get analyzed curves
+    l_curves = analyzeCurveByDensityAndSkewness(p_min_freq, p_max_freq)
 
     # kmeans clustering by [mean, std] of each keyword
     l_vectors = np.array(map(lambda curve: [curve[22], curve[23]], l_curves))
@@ -250,7 +255,7 @@ def writeOutCurves(p_curves, p_fileName):
             csvWriter.writerow(curve)
 
 
-def groupByCurves(p_min_freq, p_max_freq, p_k=30):
+def groupByCurves(p_min_freq, p_max_freq, p_k=100, p_eps=0.3):
     # get all curves
     l_curves = getCurvesOfKeywords(p_min_freq, p_max_freq)
     # get rid of word and count fields
@@ -265,8 +270,9 @@ def groupByCurves(p_min_freq, p_max_freq, p_k=30):
     pp.close()
 
     # 2. DBSCAN
-    l_dbscan = DBSCAN()
+    l_dbscan = DBSCAN(eps=0.1)
     l_dbscan.fit(l_vector_curves)
+    l_numOfGroups = len(set(l_dbscan.labels_)) - (1 if -1 in l_dbscan.labels_ else 0)
     # plot the same labeled curves in one plot
     pp = PdfPages('groupByCurvesDBSCAN.pdf')
     plotCurvesByLabels(pp, l_curves, l_dbscan.labels_)
@@ -279,50 +285,80 @@ def groupByCurves(p_min_freq, p_max_freq, p_k=30):
     l_labeled_curves = tagLabels(l_labeled_curves, l_dbscan.labels_)
     writeOutCurves(l_labeled_curves, 'keyword_curves_grouped.csv')
 
-
-# print '================================================='
-# print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
-# print '================================================='
-# print 'table:', tableName
-# print 'frequency range:[', min_freq, ',', max_freq, ']'
-# print '================================================='
-# print 'Approach 1: Group by frequency natural boundaries'
-# print 'Unit frequency:', unit_freq
-# print 'Max density:', max_density
-# start = time.time()
-# numOfGroups, computeTime, queryTime, plotTime = groupByFrequency(min_freq, max_freq, unit_freq, max_density)
-# end = time.time()
-# print '-------------------------------------------------'
-# print 'Approach 1 is done!'
-# print 'Total number of groups:', numOfGroups
-# print 'Time of computing:', computeTime
-# print 'Time of querying:', queryTime
-# print 'Time of plotting:', plotTime
-# print 'Total time:', end - start
-#
-# print '================================================='
-# print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
-# print '================================================='
-# print 'table:', tableName
-# print 'frequency range:[', min_freq, ',', max_freq, ']'
-# print '================================================='
-# print 'Approach 2: Group by frequency clustering by K-Means'
-# print 'K:', K
-# start = time.time()
-# numOfGroups, computeTime, queryTime, plotTime = groupByFrequencyKMeans(min_freq, max_freq, K)
-# end = time.time()
-# print '-------------------------------------------------'
-# print 'Approach 2 is done!'
-# print 'Total number of groups:', numOfGroups
-# print 'Time of computing:', computeTime
-# print 'Time of querying:', queryTime
-# print 'Time of plotting:', plotTime
-# print 'Total time:', end - start
+    return l_numOfGroups
 
 
-groupByCurves(min_freq, max_freq, 100)
-# analyzeCurveByDensityAndSkewness(min_freq, max_freq)
-# groupByDensityAndSkewnessKMeans(min_freq, max_freq, 100)
+print '================================================='
+print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+print 'Approach 1: Group by frequency natural boundaries'
+print '================================================='
+print 'table:', tableName
+print 'frequency range:[', min_freq, ',', max_freq, ']'
+print 'Unit frequency:', unit_freq
+print 'Max density:', max_density
+print '================================================='
+start = time.time()
+numOfGroups, computeTime, queryTime, plotTime = groupByFrequency(min_freq, max_freq, unit_freq, max_density)
+end = time.time()
+print '-------------------------------------------------'
+print 'Approach 1 is done!'
+print 'Total number of groups:', numOfGroups
+print 'Time of computing:', computeTime
+print 'Time of querying:', queryTime
+print 'Time of plotting:', plotTime
+print 'Total time:', end - start
 
+print '================================================='
+print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+print 'Approach 2: Group by frequency clustering by K-Means'
+print '================================================='
+print 'table:', tableName
+print 'frequency range:[', min_freq, ',', max_freq, ']'
+print 'K:', K
+print '================================================='
+start = time.time()
+numOfGroups, computeTime, queryTime, plotTime = groupByFrequencyKMeans(K)
+end = time.time()
+print '-------------------------------------------------'
+print 'Approach 2 is done!'
+print 'Total number of groups:', numOfGroups
+print 'Time of computing:', computeTime
+print 'Time of querying:', queryTime
+print 'Time of plotting:', plotTime
+print 'Total time:', end - start
+
+print '================================================='
+print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+print 'Approach 3: Group by density and skewness clustering by K-Means'
+print '================================================='
+print 'table:', tableName
+print 'frequency range:[', min_freq, ',', max_freq, ']'
+print 'K:', K
+print '================================================='
+start = time.time()
+groupByDensityAndSkewnessKMeans(min_freq, max_freq, K)
+end = time.time()
+print '-------------------------------------------------'
+print 'Approach 3 is done!'
+print 'Total number of groups:', K
+print 'Total time:', end - start
+
+print '================================================='
+print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+print 'Ground Truth : Group by curves clustering by K-Means & DBSCAN'
+print '================================================='
+print 'table:', tableName
+print 'frequency range:[', min_freq, ',', max_freq, ']'
+print 'K:', K
+print 'eps:', EPS, "(maximum distance between two samples)"
+print '================================================='
+start = time.time()
+dbscan_numOfGroups = groupByCurves(min_freq, max_freq, 100)
+end = time.time()
+print '-------------------------------------------------'
+print 'Ground Truth is done!'
+print 'Total number of groups for K-Means:', K
+print 'Total number of groups for DBSCAN:', dbscan_numOfGroups
+print 'Total time:', end - start
 
 db.close()

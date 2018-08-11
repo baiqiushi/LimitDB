@@ -1,9 +1,9 @@
 import csv
-import CurveGenerator
 import Conf
 import DatabaseFactory
 import numpy as np
 import KeywordsUtil
+import QualityUtil
 
 
 database = Conf.DATABASE
@@ -22,7 +22,7 @@ def getPerfectImage(p_keyword):
     if len(ar) == 0:
         return []
     # perfect image
-    H = CurveGenerator.hashByNumpy(ar)
+    H = QualityUtil.coordinatesToImage(ar)
     return H.ravel()
 
 

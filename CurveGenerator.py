@@ -3,7 +3,7 @@ import time
 import KeywordsUtil
 import Conf
 import DatabaseFactory
-import QualityUitl
+import QualityUtil
 
 
 # Common config
@@ -55,7 +55,7 @@ def generateCurves(p_min_freq, p_max_freq):
             # 2. for each k percentage calculate the quality value
             t1 = time.time()
             for k_percentage in k_percentages:
-                similarity = QualityUitl.phQualityOfKPercentage(totalCoordinates, k_percentage)
+                similarity = QualityUtil.phQualityOfKPercentage(totalCoordinates, k_percentage)
                 curve.append(similarity)
 
             # 3. write down the curve of this keyword to csv file
@@ -82,7 +82,7 @@ print '================================================='
 print 'table:', tableName
 print 'frequency range:[', min_freq, ',', max_freq, ']'
 print 'k_percentage:', map(lambda k_p: str(k_p) + '%', k_percentages)
-QualityUitl.printInfo()
+QualityUtil.printInfo()
 print '-------------------------------------------------'
 start = time.time()
 count = generateCurves(min_freq, max_freq)
@@ -93,6 +93,6 @@ print '================================================='
 print 'table:', tableName
 print 'frequency range:[', min_freq, ',', max_freq, ']'
 print 'k_percentage:', map(lambda k_p: str(k_p) + '%', k_percentages)
-QualityUitl.printInfo()
+QualityUtil.printInfo()
 print '-------------------------------------------------'
 print 'Finished!', count, 'keywords processed,', end - start, 'seconds spent.'
