@@ -130,6 +130,8 @@ class PostgreSQLUtil:
                 ' ORDER BY ' + p_orderBy + \
                 ' LIMIT ' + str(p_limit)
         results = self.query(l_sql)
+        # convert the sub-tuples into single value
+        results = map(lambda record: record[0], results)
         return results
 
 
@@ -152,4 +154,8 @@ def test():
     print result
     result = db.queryCurveInCount(5000, 5020)
     print result
+    result = db.queryLimitWordInCurveGroupOrderBy(0, 3, 'random')
+    print result
 
+
+# test()

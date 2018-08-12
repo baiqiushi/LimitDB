@@ -41,6 +41,10 @@ def collectPerfectImages():
 
 
 def jaccardSimilarity(list1, list2):
+
+    if len(list1) == 0 | len(list2) == 0:
+        return 0.0
+
     intersection = len(list(set(list1).intersection(list2)))
     # print(list(set(list1).intersection(list2)))
     # print "intersection = ", intersection
