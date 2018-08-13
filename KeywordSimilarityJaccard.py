@@ -26,18 +26,32 @@ def getPerfectImage(p_keyword):
     return H.ravel()
 
 
-def collectPerfectImages():
+# return a dictionary
+# { 0: {'job': [idx0, idx1, idx2, ...],
+#       'latest': [idx0, idx3, idx4, ...],
+#        ...},
+#   1: {...},
+#   ...
+# }
+# p_k - number of groups totally
+# p_numPerGroup - number of keywords randomly picked for each group
+def collectCellsListOfGroups(p_k, p_numPerGroup):
+    result = {}
 
-    keywords = KeywordsUtil.pickAllInFrequencyRange(min_freq, max_freq)
-
-    csvFileName = 'keyword_perfect_images.csv'
-
-    with open(csvFileName, 'w') as csvFile:
-        csvWriter = csv.writer(csvFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    # Traverse the group labels
+    for i in range(0, p_k, 1):
+        # For each group, randomly pick p_numPerGroup keywords
+        keywords = KeywordsUtil.randomPickInCurveGroup(i, p_numPerGroup)
+        if len(keywords) < p_numPerGroup:
+            continue
+        result[i] = {}
+        # For each keyword, get all the occupied cells indexes list
         for keyword in keywords:
-            img = getPerfectImage(keyword[0])
-            np.append(img, keyword[0])
-            csvWriter.writerow(img)
+            perfectImage = getPerfectImage(keyword)
+            indexesList = np.nonzero(perfectImage)[0]
+            result[i][keyword] = indexesList
+
+    return result
 
 
 def jaccardSimilarity(list1, list2):
@@ -81,17 +95,22 @@ def collectRecordsListOfGroups(p_k, p_numPerGroup):
     return result
 
 
-def collectJaccardSimilarities(p_k, p_numPerGroup):
-    groupsOfKeywordsIDs = collectRecordsListOfGroups(p_k, p_numPerGroup)
+def collectJaccardSimilarities(p_k, p_numPerGroup, p_byWhat='cell'):
+    if p_byWhat == 'id':
+        groupsOfKeywordsLists = collectRecordsListOfGroups(p_k, p_numPerGroup)
+    elif p_byWhat == 'cell':
+        groupsOfKeywordsLists = collectCellsListOfGroups(p_k, p_numPerGroup)
+    else:
+        return 'byWhat parameter', p_byWhat, 'is not supported!'
 
     # 1. Jaccard similarities inside groups
-    csvFileName = 'in_group_jaccard.csv'
+    csvFileName = 'in_group_jaccard_' + p_byWhat + '.csv'
     inGroupJaccard = []
-    for group in groupsOfKeywordsIDs:
+    for group in groupsOfKeywordsLists:
 
         groupJaccard = [group]
 
-        keywordsIDs = groupsOfKeywordsIDs[group]
+        keywordsIDs = groupsOfKeywordsLists[group]
         keywords = keywordsIDs.keys()
 
         groupJaccard.extend(list(keywords))
@@ -109,13 +128,13 @@ def collectJaccardSimilarities(p_k, p_numPerGroup):
             csvWriter.writerow(gj)
 
     # 2. Jaccard similarities between groups
-    csvFileName = 'out_group_jaccard.csv'
+    csvFileName = 'out_group_jaccard_' + p_byWhat + '.csv'
     outGroupJaccard = []
-    groups = groupsOfKeywordsIDs.keys()
+    groups = groupsOfKeywordsLists.keys()
     for i in range(0, len(groups), 1):
         for j in range(i + 1, len(groups), 1):
-            group1 = groupsOfKeywordsIDs[groups[i]]
-            group2 = groupsOfKeywordsIDs[groups[j]]
+            group1 = groupsOfKeywordsLists[groups[i]]
+            group2 = groupsOfKeywordsLists[groups[j]]
 
             groupJaccard = [groups[i], groups[j]]
 
@@ -152,5 +171,10 @@ def test_jaccardSimilarity2():
     print jaccardSimilarity(fire, chicago)
 
 
-collectJaccardSimilarities(2, 3)
+def test_indexesList():
+    perfectImage = getPerfectImage('job')
+    indexesList = np.nonzero(perfectImage)[0]
+    print indexesList
 
+
+collectJaccardSimilarities(100, 5, 'cell')
