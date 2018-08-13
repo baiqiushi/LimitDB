@@ -16,7 +16,7 @@ tableName = Conf.TABLE
 min_freq = 5000
 max_freq = 4000000
 
-limit = 1000
+limit = 1000000
 
 # select count(*) from limitdb.coord_tweets where ftcontains(text, keyword);
 # collect all these cardinalities for each keyword
@@ -61,7 +61,7 @@ def collectWordCountForAsterixDB(p_limit):
             tokens = [word for word in record['tokens'] if word not in stopwords.words('english') and len(word) > 2]
             wordcount.update(Counter(tokens))
 
-        progress += offset
+        progress += p_limit
         t1 = time.time()
         print "Total time:", t1 - t0, "Progress:", str(float(progress) * 100 / float(tableCardinality)) + '%'
 
