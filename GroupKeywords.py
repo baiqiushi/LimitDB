@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 import csv
 import Conf
 import DatabaseFactory
@@ -8,8 +10,6 @@ import time
 import numpy as np
 from sklearn.cluster import DBSCAN
 from sklearn.cluster import KMeans
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
