@@ -3,14 +3,14 @@ import Conf
 import DatabaseFactory
 import KeywordsUtil
 import QualityUtil
-import matplotlib
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import time
 import numpy as np
 from sklearn.cluster import DBSCAN
 from sklearn.cluster import KMeans
+import matplotlib
 matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 
 database = Conf.DATABASE
