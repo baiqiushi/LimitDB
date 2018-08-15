@@ -4,6 +4,8 @@ import Conf
 import DatabaseFactory
 import QualityUtil
 import numpy as np
+from astropy.convolution import convolve
+from astropy.convolution.kernels import Gaussian2DKernel
 
 
 def DrawScatter(matrix, p_file):
@@ -32,7 +34,8 @@ def DrawHeat(matrix, p_normalFactor, p_file):
         matrix = matrix / l_max
     r, c = np.nonzero(matrix)
     print matrix[r, c]
-    plt.imshow(matrix, cmap='hot', interpolation='nearest')
+    # plt.imshow(matrix, cmap='hot', interpolation='nearest')
+    plt.imshow(convolve(matrix, Gaussian2DKernel(stddev=2)), interpolation='none')
     plt.savefig(p_file)
     plt.close()
 

@@ -18,12 +18,13 @@ max_freq = 4000000
 
 limit = 1000000
 
+
 # select count(*) from limitdb.coord_tweets where ftcontains(text, keyword);
 # collect all these cardinalities for each keyword
 def collectWordsCardinalities():
     db = DatabaseFactory.getDatabase(database)
     keywords = KeywordsUtil.pickAllInFrequencyRange(min_freq, max_freq)
-    csvFileName = 'wordcardinalities.csv'
+    csvFileName = 'wordcardinality.csv'
     with open(csvFileName, 'w') as csvFile:
         csvWriter = csv.writer(csvFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         progress = 0
