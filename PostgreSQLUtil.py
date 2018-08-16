@@ -109,11 +109,11 @@ class PostgreSQLUtil:
                 ' ORDER BY count DESC'
         return self.query(l_sql)
 
-    def queryCurveInCount(self, p_min_count, p_max_count):
+    def queryCurveInCount(self, p_min_count, p_max_count, p_tableName='wordcurve'):
         l_sql = 'SELECT word, count, q5, q10, q15, q20, ' \
                 '       q25, q30, q35, q40, q45, q50, q55,' \
                 '       q60, q65, q70, q75, q80, q85, q90, q95 ' \
-                '  FROM wordcurve ' \
+                '  FROM ' + p_tableName + \
                 ' WHERE count >= ' + str(p_min_count) + \
                 '   and count <= ' + str(p_max_count) + \
                 ' ORDER BY count DESC'
@@ -122,10 +122,10 @@ class PostgreSQLUtil:
         results = map(lambda record: list(record), results)
         return results
 
-    def queryLimitWordInCurveGroupOrderBy(self, p_group, p_limit, p_orderBy):
+    def queryLimitWordInCurveGroupOrderBy(self, p_group, p_limit, p_orderBy, p_tableName='wordcurve_grouped'):
         if p_orderBy == 'random':
             p_orderBy = 'random()'
-        l_sql = 'SELECT word FROM wordcurve_grouped ' \
+        l_sql = 'SELECT word FROM ' + p_tableName + \
                 ' WHERE kmeans = ' + str(p_group) + \
                 ' ORDER BY ' + p_orderBy + \
                 ' LIMIT ' + str(p_limit)

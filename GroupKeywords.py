@@ -8,13 +8,13 @@ import QualityUtil
 from matplotlib.backends.backend_pdf import PdfPages
 import time
 import numpy as np
-from sklearn.cluster import DBSCAN
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
 
 database = Conf.DATABASE
 tableName = Conf.TABLE
+curveTableName = 'wordcurve_sample'
 
 # Keywords frequency range
 min_freq = 5000
@@ -25,9 +25,7 @@ unit_freq = 5000
 max_density = 100
 
 # KMeans parameter
-K = 100
-# DBSCAN parameter
-EPS = 0.3
+K = 10
 
 db = DatabaseFactory.getDatabase(database)
 keywords = KeywordsUtil.pickAllInFrequencyRange(min_freq, max_freq)
@@ -44,7 +42,7 @@ def getNumOfKeywords(p_min_freq, p_max_freq):
 # get the curves data for given frequency range
 # [keyword, frequency, q(5%), q(10%), ..., q(95%)]
 def getCurvesOfKeywords(p_min_freq, p_max_freq):
-    results = db.queryCurveInCount(p_min_freq, p_max_freq)
+    results = db.queryCurveInCount(p_min_freq, p_max_freq, curveTableName)
     return results
 
 
@@ -121,17 +119,6 @@ def plotKeywordsFrequencies():
     plt.figure()
     plt.scatter(l_x, l_y)
     plt.show()
-
-
-def groupByFrequencyDBSCAN():
-    # array of frequencies of keywords
-    l_freqs = np.array(map(lambda kw: [kw[1], 0], keywords)).reshape(-1, 1)
-    print l_freqs
-    l_dbscan = DBSCAN(eps=0.3).fit(l_freqs)
-    print l_dbscan
-    print l_dbscan.labels_
-    print l_dbscan.components_
-    print l_dbscan.core_sample_indices_
 
 
 def groupByFrequencyKMeans(p_k=100):
@@ -258,7 +245,7 @@ def writeOutCurves(p_curves, p_fileName):
             csvWriter.writerow(curve)
 
 
-def groupByCurves(p_min_freq, p_max_freq, p_k=100, p_eps=0.3):
+def groupByCurves(p_min_freq, p_max_freq, p_k=10):
     # get all curves
     l_curves = getCurvesOfKeywords(p_min_freq, p_max_freq)
     # get rid of word and count fields
@@ -272,96 +259,138 @@ def groupByCurves(p_min_freq, p_max_freq, p_k=100, p_eps=0.3):
     plotCurvesByLabels(pp, l_curves, l_km.labels_)
     pp.close()
 
-    # 2. DBSCAN
-    l_dbscan = DBSCAN(eps=0.1)
-    l_dbscan.fit(l_vector_curves)
-    l_numOfGroups = len(set(l_dbscan.labels_)) - (1 if -1 in l_dbscan.labels_ else 0)
-    # plot the same labeled curves in one plot
-    pp = PdfPages('groupByCurvesDBSCAN.pdf')
-    plotCurvesByLabels(pp, l_curves, l_dbscan.labels_)
-    pp.close()
-
-    # 3. write the labeled curves to csv file
+    # 2. write the labeled curves to csv file
     # label K-Means
     l_labeled_curves = tagLabels(l_curves, l_km.labels_)
-    # label DBSCAN
-    l_labeled_curves = tagLabels(l_labeled_curves, l_dbscan.labels_)
     writeOutCurves(l_labeled_curves, 'keyword_curves_grouped.csv')
 
-    return l_numOfGroups
 
+# Use curves kmeans clustering results to clean the original curves
+# Delete those curves that appears in a group containing less than 6 curves
+def cleanCurves():
+    sql = "delete from wordcurve g where g.word in " \
+          "  (select t1.word from wordcurve_grouped t1 where t1.kmeans in " \
+          "    (select o.kmeans from " \
+          "      (select t.kmeans, count(*) as count from wordcurve_grouped t group by t.kmeans) o " \
+          "    where o.count <= 6))"
+    return sql
+
+
+# print '================================================='
+# print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+# print 'Approach 1: Group by frequency natural boundaries'
+# print '================================================='
+# print 'table:', tableName
+# print 'frequency range:[', min_freq, ',', max_freq, ']'
+# print 'Unit frequency:', unit_freq
+# print 'Max density:', max_density
+# print '================================================='
+# start = time.time()
+# numOfGroups, computeTime, queryTime, plotTime = groupByFrequency(min_freq, max_freq, unit_freq, max_density)
+# end = time.time()
+# print '-------------------------------------------------'
+# print 'Approach 1 is done!'
+# print 'Total number of groups:', numOfGroups
+# print 'Time of computing:', computeTime
+# print 'Time of querying:', queryTime
+# print 'Time of plotting:', plotTime
+# print 'Total time:', end - start
+#
+# print '================================================='
+# print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+# print 'Approach 2: Group by frequency clustering by K-Means'
+# print '================================================='
+# print 'table:', tableName
+# print 'frequency range:[', min_freq, ',', max_freq, ']'
+# print 'K:', K
+# print '================================================='
+# start = time.time()
+# numOfGroups, computeTime, queryTime, plotTime = groupByFrequencyKMeans(K)
+# end = time.time()
+# print '-------------------------------------------------'
+# print 'Approach 2 is done!'
+# print 'Total number of groups:', numOfGroups
+# print 'Time of computing:', computeTime
+# print 'Time of querying:', queryTime
+# print 'Time of plotting:', plotTime
+# print 'Total time:', end - start
+#
+# print '================================================='
+# print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+# print 'Approach 3: Group by density and skewness clustering by K-Means'
+# print '================================================='
+# print 'table:', tableName
+# print 'frequency range:[', min_freq, ',', max_freq, ']'
+# print 'K:', K
+# print '================================================='
+# start = time.time()
+# groupByDensityAndSkewnessKMeans(min_freq, max_freq, K)
+# end = time.time()
+# print '-------------------------------------------------'
+# print 'Approach 3 is done!'
+# print 'Total number of groups:', K
+# print 'Total time:', end - start
 
 print '================================================='
 print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
-print 'Approach 1: Group by frequency natural boundaries'
-print '================================================='
-print 'table:', tableName
-print 'frequency range:[', min_freq, ',', max_freq, ']'
-print 'Unit frequency:', unit_freq
-print 'Max density:', max_density
-print '================================================='
-start = time.time()
-numOfGroups, computeTime, queryTime, plotTime = groupByFrequency(min_freq, max_freq, unit_freq, max_density)
-end = time.time()
-print '-------------------------------------------------'
-print 'Approach 1 is done!'
-print 'Total number of groups:', numOfGroups
-print 'Time of computing:', computeTime
-print 'Time of querying:', queryTime
-print 'Time of plotting:', plotTime
-print 'Total time:', end - start
-
-print '================================================='
-print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
-print 'Approach 2: Group by frequency clustering by K-Means'
+print 'Ground Truth : Group by curves clustering by K-Means'
 print '================================================='
 print 'table:', tableName
 print 'frequency range:[', min_freq, ',', max_freq, ']'
 print 'K:', K
 print '================================================='
 start = time.time()
-numOfGroups, computeTime, queryTime, plotTime = groupByFrequencyKMeans(K)
-end = time.time()
-print '-------------------------------------------------'
-print 'Approach 2 is done!'
-print 'Total number of groups:', numOfGroups
-print 'Time of computing:', computeTime
-print 'Time of querying:', queryTime
-print 'Time of plotting:', plotTime
-print 'Total time:', end - start
-
-print '================================================='
-print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
-print 'Approach 3: Group by density and skewness clustering by K-Means'
-print '================================================='
-print 'table:', tableName
-print 'frequency range:[', min_freq, ',', max_freq, ']'
-print 'K:', K
-print '================================================='
-start = time.time()
-groupByDensityAndSkewnessKMeans(min_freq, max_freq, K)
-end = time.time()
-print '-------------------------------------------------'
-print 'Approach 3 is done!'
-print 'Total number of groups:', K
-print 'Total time:', end - start
-
-print '================================================='
-print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
-print 'Ground Truth : Group by curves clustering by K-Means & DBSCAN'
-print '================================================='
-print 'table:', tableName
-print 'frequency range:[', min_freq, ',', max_freq, ']'
-print 'K:', K
-print 'eps:', EPS, "(maximum distance between two samples)"
-print '================================================='
-start = time.time()
-dbscan_numOfGroups = groupByCurves(min_freq, max_freq, 100)
+groupByCurves(min_freq, max_freq, K)
 end = time.time()
 print '-------------------------------------------------'
 print 'Ground Truth is done!'
-print 'Total number of groups for K-Means:', K
-print 'Total number of groups for DBSCAN:', dbscan_numOfGroups
 print 'Total time:', end - start
 
 db.close()
+
+
+def jaccardSimilarity(list1, list2):
+
+    if len(list1) == 0 | len(list2) == 0:
+        return 0.0
+
+    intersection = len(list(set(list1).intersection(list2)))
+    # print(list(set(list1).intersection(list2)))
+    # print "intersection = ", intersection
+    union = (len(list1) + len(list2)) - intersection
+    # print "union = ", union
+    return intersection, union, float(intersection) / float(union)
+
+
+def groupJaccard():
+    # 1 load keyword curves grouped results
+    with open('/Users/white/Documents/Limit-Paper/postgresql/k10/keyword_curves_grouped.csv') as f1:
+        reader = csv.reader(f1)
+        keywordGroups = list(reader)
+    with open('/Users/white/Documents/Limit-Paper/postgresql/k10/keyword_curves_grouped_sample.csv') as f2:
+        reader = csv.reader(f2)
+        keywordGroups_sample = list(reader)
+
+    groupKeywords = {}
+    groupKeywords_sample = {}
+
+    for kg in keywordGroups:
+        if kg[21] in groupKeywords.keys():
+            groupKeywords[kg[21]].append(kg[0])
+        else:
+            groupKeywords[kg[21]] = [kg[0]]
+
+    for kgs in keywordGroups_sample:
+        if kgs[21] in groupKeywords_sample.keys():
+            groupKeywords_sample[kgs[21]].append(kgs[0])
+        else:
+            groupKeywords_sample[kgs[21]] = [kgs[0]]
+
+    with open('groups_jaccard.csv', 'w') as csvFile:
+        csvWriter = csv.writer(csvFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for g1 in groupKeywords.keys():
+            for g2 in groupKeywords_sample.keys():
+                row = [g1, g2]
+                row.extend(jaccardSimilarity(groupKeywords[g1], groupKeywords_sample[g2]))
+                csvWriter.writerow(row)
+
