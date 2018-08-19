@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 
 database = Conf.DATABASE
 tableName = Conf.TABLE
-curveTableName = 'wordcurve_sample'
 
 # Keywords frequency range
 min_freq = 5000
@@ -26,6 +25,10 @@ max_density = 100
 
 # KMeans parameter
 K = 10
+
+# Group by sample sub-curves
+start_pk = 50
+end_pk = 95
 
 db = DatabaseFactory.getDatabase(database)
 keywords = KeywordsUtil.pickAllInFrequencyRange(min_freq, max_freq)
@@ -41,8 +44,8 @@ def getNumOfKeywords(p_min_freq, p_max_freq):
 
 # get the curves data for given frequency range
 # [keyword, frequency, q(5%), q(10%), ..., q(95%)]
-def getCurvesOfKeywords(p_min_freq, p_max_freq):
-    results = db.queryCurveInCount(p_min_freq, p_max_freq, curveTableName)
+def getCurvesOfKeywords(p_min_freq, p_max_freq, p_curveTableName):
+    results = db.queryCurveInCount(p_min_freq, p_max_freq, p_curveTableName)
     return results
 
 
@@ -222,6 +225,66 @@ def groupByDensityAndSkewnessKMeans(p_min_freq, p_max_freq, p_k=100):
     writeOutCurves(l_labeled_curves, 'keyword_curves_grouped_density.csv')
 
 
+def groupByFrequencyAndDensityAndSkewnessKMeans(p_min_freq, p_max_freq, p_k=100):
+
+    # get analyzed curves
+    l_curves = getAnalyzedCurvesOfKeywords(p_min_freq, p_max_freq)
+
+    # kmeans clustering by [mean, std] of each keyword
+    l_vectors = np.array(map(lambda curve: [curve[1], curve[22], curve[23]], l_curves))
+    l_km = KMeans(n_clusters=p_k)
+    l_km.fit(l_vectors)
+
+    # plot the same labeled curves in one plot
+    pp = PdfPages('groupByFrequencyAndDensityAndSkewnessKMeans.pdf')
+    plotCurvesByLabels(pp, l_curves, l_km.labels_)
+    pp.close()
+
+    # write the labeled curves to csv file
+    l_labeled_curves = tagLabels(l_curves, l_km.labels_)
+    writeOutCurves(l_labeled_curves, 'keyword_curves_grouped_freq_density.csv')
+
+
+def groupByCellLenAndDensityAndSkewnessKMeans(p_min_freq, p_max_freq, p_k=100):
+
+    # get analyzed curves
+    l_curves = getAnalyzedCurvesOfKeywords(p_min_freq, p_max_freq)
+
+    # kmeans clustering by [mean, std] of each keyword
+    l_vectors = np.array(map(lambda curve: [curve[21], curve[22], curve[23]], l_curves))
+    l_km = KMeans(n_clusters=p_k)
+    l_km.fit(l_vectors)
+
+    # plot the same labeled curves in one plot
+    pp = PdfPages('groupByCellLenAndDensityAndSkewnessKMeans.pdf')
+    plotCurvesByLabels(pp, l_curves, l_km.labels_)
+    pp.close()
+
+    # write the labeled curves to csv file
+    l_labeled_curves = tagLabels(l_curves, l_km.labels_)
+    writeOutCurves(l_labeled_curves, 'keyword_curves_grouped_cell_len_density.csv')
+
+
+def groupByFreqAndCellLenAndDensityAndSkewnessKMeans(p_min_freq, p_max_freq, p_k=100):
+
+    # get analyzed curves
+    l_curves = getAnalyzedCurvesOfKeywords(p_min_freq, p_max_freq)
+
+    # kmeans clustering by [mean, std] of each keyword
+    l_vectors = np.array(map(lambda curve: [curve[1], curve[21], curve[22], curve[23]], l_curves))
+    l_km = KMeans(n_clusters=p_k)
+    l_km.fit(l_vectors)
+
+    # plot the same labeled curves in one plot
+    pp = PdfPages('groupByFreqAndCellLenAndDensityAndSkewnessKMeans.pdf')
+    plotCurvesByLabels(pp, l_curves, l_km.labels_)
+    pp.close()
+
+    # write the labeled curves to csv file
+    l_labeled_curves = tagLabels(l_curves, l_km.labels_)
+    writeOutCurves(l_labeled_curves, 'keyword_curves_grouped_freq_cell_len_density.csv')
+
+
 def plotCurvesByLabels(p_pp, p_curves, p_labels):
     # plot the curves for each cluster
     for label in range(0, len(set(p_labels)), 1):
@@ -247,7 +310,8 @@ def writeOutCurves(p_curves, p_fileName):
 
 def groupByCurves(p_min_freq, p_max_freq, p_k=10):
     # get all curves
-    l_curves = getCurvesOfKeywords(p_min_freq, p_max_freq)
+    l_curveTableName = 'wordcurve'
+    l_curves = getCurvesOfKeywords(p_min_freq, p_max_freq, l_curveTableName)
     # get rid of word and count fields
     l_vector_curves = map(lambda cur: cur[2:20], l_curves)
 
@@ -263,6 +327,36 @@ def groupByCurves(p_min_freq, p_max_freq, p_k=10):
     # label K-Means
     l_labeled_curves = tagLabels(l_curves, l_km.labels_)
     writeOutCurves(l_labeled_curves, 'keyword_curves_grouped.csv')
+
+
+def groupBySampleCurves(p_min_freq, p_max_freq, p_start_kp, p_end_kp, p_k=10):
+    # get all curves
+    l_sampleCurveTableName = 'wordcurve_sample'
+    l_sampleCurves = getCurvesOfKeywords(p_min_freq, p_max_freq, l_sampleCurveTableName)
+    # get rid of word and count fields and get curve in range [p_start_kp, p_end_kp]
+    l_start_index = k_percentage.index(p_start_kp) + 2
+    l_end_index = k_percentage.index(p_end_kp) + 2
+    l_vector_curves = map(lambda cur: cur[l_start_index:l_end_index], l_sampleCurves)
+
+    # 1. K-Means
+    l_km = KMeans(n_clusters=p_k)
+    l_km.fit(l_vector_curves)
+    # plot the same labeled curves in one plot
+    pp = PdfPages('groupByCurvesKMeans_sample_k' + str(p_k) + '_kp' + str(p_start_kp) + '.pdf')
+    plotCurvesByLabels(pp, l_sampleCurves, l_km.labels_)
+    pp.close()
+
+    # 2. write the labeled curves to csv file
+    # label K-Means
+    l_labeled_curves = tagLabels(l_sampleCurves, l_km.labels_)
+    writeOutCurves(l_labeled_curves, 'keyword_curves_grouped_sample_k' + str(p_k) + '_kp' + str(p_start_kp) + '.csv')
+
+    # 3. plot the curves from original dataset based on clustering results on sample curves
+    l_curveTableName = 'wordcurve'
+    l_curves = getCurvesOfKeywords(p_min_freq, p_max_freq, l_curveTableName)
+    pp = PdfPages('groupBySampleCurvesKMeans_k' + str(p_k) + '_kp' + str(p_start_kp) + '.pdf')
+    plotCurvesByLabels(pp, l_curves, l_km.labels_)
+    pp.close()
 
 
 # Use curves kmeans clustering results to clean the original curves
@@ -331,22 +425,22 @@ def cleanCurves():
 # print 'Total number of groups:', K
 # print 'Total time:', end - start
 
-print '================================================='
-print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
-print 'Ground Truth : Group by curves clustering by K-Means'
-print '================================================='
-print 'table:', tableName
-print 'frequency range:[', min_freq, ',', max_freq, ']'
-print 'K:', K
-print '================================================='
-start = time.time()
-groupByCurves(min_freq, max_freq, K)
-end = time.time()
-print '-------------------------------------------------'
-print 'Ground Truth is done!'
-print 'Total time:', end - start
-
-db.close()
+# print '================================================='
+# print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+# print 'Ground Truth : Group by curves clustering by K-Means'
+# print '================================================='
+# print 'table:', tableName
+# print 'frequency range:[', min_freq, ',', max_freq, ']'
+# print 'K:', K
+# print '================================================='
+# start = time.time()
+# groupByCurves(min_freq, max_freq, K)
+# end = time.time()
+# print '-------------------------------------------------'
+# print 'Ground Truth is done!'
+# print 'Total time:', end - start
+#
+# db.close()
 
 
 def jaccardSimilarity(list1, list2):
@@ -394,3 +488,112 @@ def groupJaccard():
                 row.extend(jaccardSimilarity(groupKeywords[g1], groupKeywords_sample[g2]))
                 csvWriter.writerow(row)
 
+
+# groupJaccard()
+
+
+# print '================================================='
+# print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+# print 'Approach 4: Group by frequency and density and skewness clustering by K-Means'
+# print '================================================='
+# print 'table:', tableName
+# print 'frequency range:[', min_freq, ',', max_freq, ']'
+# print 'K:', K
+# print '================================================='
+# start = time.time()
+# groupByFrequencyAndDensityAndSkewnessKMeans(min_freq, max_freq, K)
+# end = time.time()
+# print '-------------------------------------------------'
+# print 'Approach 4 is done!'
+# print 'Total number of groups:', K
+# print 'Total time:', end - start
+#
+# print '================================================='
+# print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+# print 'Approach 5: Group by cell length and density and skewness clustering by K-Means'
+# print '================================================='
+# print 'table:', tableName
+# print 'frequency range:[', min_freq, ',', max_freq, ']'
+# print 'K:', K
+# print '================================================='
+# start = time.time()
+# groupByCellLenAndDensityAndSkewnessKMeans(min_freq, max_freq, K)
+# end = time.time()
+# print '-------------------------------------------------'
+# print 'Approach 5 is done!'
+# print 'Total number of groups:', K
+# print 'Total time:', end - start
+
+# print '================================================='
+# print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+# print 'Approach 6: Group by frequency and cell length and density and skewness clustering by K-Means'
+# print '================================================='
+# print 'table:', tableName
+# print 'frequency range:[', min_freq, ',', max_freq, ']'
+# print 'K:', K
+# print '================================================='
+# start = time.time()
+# groupByFreqAndCellLenAndDensityAndSkewnessKMeans(min_freq, max_freq, K)
+# end = time.time()
+# print '-------------------------------------------------'
+# print 'Approach 6 is done!'
+# print 'Total number of groups:', K
+# print 'Total time:', end - start
+
+
+def verifyOrderBetweenSampleAndOriginal(p_keyword):
+    l_original = db.GetID(tableName, p_keyword, -1)
+    l_sample = db.GetID(tableName + '_sample', p_keyword, -1)
+
+    l_original = list(map(lambda record: record[0], l_original))
+    l_sample = list(map(lambda record: record[0], l_sample))
+
+    # l_max_index = 0
+    # for l_id in l_sample:
+    #     l_index = l_original.index(l_id)
+    #     if l_index <= l_max_index:
+    #         print "Found this id:", l_id, "disordered... index =", l_index
+    #         return
+    #     else:
+    #         l_max_index = l_index
+
+    j = 0
+    for i in range(0, len(l_sample), 1):
+        while l_sample[i] != l_original[j]:
+            j += 1
+            if j == len(l_original):
+                rj = l_original.index(l_sample[i])
+                print "Element:", l_sample[i], "in sample the", i, "th place is in original the", rj, "th place."
+                rj_1 = l_original.index(l_sample[i-1])
+                print "But element:", l_sample[i-1], "in sample the", i-1, "th place is in original the", rj_1, "th place"
+                return False
+
+    print "All records in sample follow the same order as in original data set"
+    return True
+
+
+# verifyOrderBetweenSampleAndOriginal('recommend')
+# verifyOrderBetweenSampleAndOriginal('interest')
+# verifyOrderBetweenSampleAndOriginal('retail')
+# verifyOrderBetweenSampleAndOriginal('day')
+# verifyOrderBetweenSampleAndOriginal('need')
+# verifyOrderBetweenSampleAndOriginal('weekend')
+
+
+print '================================================='
+print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+print 'Approach 7 : Group by sub-curves from sample data set clustering by K-Means'
+print '================================================='
+print 'table:', tableName
+print 'frequency range:[', min_freq, ',', max_freq, ']'
+print 'sub-curves range:[', start_pk, ',', end_pk, ']'
+print 'K:', K
+print '================================================='
+start = time.time()
+groupBySampleCurves(min_freq, max_freq, start_pk, end_pk, K)
+end = time.time()
+print '-------------------------------------------------'
+print 'Approach 7 is done!'
+print 'Total time:', end - start
+
+db.close()
