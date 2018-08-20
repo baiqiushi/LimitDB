@@ -13,6 +13,9 @@ tableName = Conf.TABLE
 # Config for this experiment
 csvFileName = 'keyword_curves.csv'
 
+# Resolution Scale
+x_scale = 1
+y_scale = 1
 
 # Keywords frequency range
 min_freq = 5000
@@ -55,7 +58,7 @@ def generateCurves(p_min_freq, p_max_freq):
             # 2. for each k percentage calculate the quality value
             t1 = time.time()
             for k_percentage in k_percentages:
-                similarity = QualityUtil.phQualityOfKPercentage(totalCoordinates, k_percentage)
+                similarity = QualityUtil.phQualityOfKPercentage(totalCoordinates, k_percentage, x_scale, y_scale)
                 curve.append(similarity)
 
             # 3. write down the curve of this keyword to csv file
@@ -82,7 +85,7 @@ print '================================================='
 print 'table:', tableName
 print 'frequency range:[', min_freq, ',', max_freq, ']'
 print 'k_percentage:', map(lambda k_p: str(k_p) + '%', k_percentages)
-QualityUtil.printInfo()
+QualityUtil.printInfo(x_scale, y_scale)
 print '-------------------------------------------------'
 start = time.time()
 count = generateCurves(min_freq, max_freq)
@@ -93,6 +96,6 @@ print '================================================='
 print 'table:', tableName
 print 'frequency range:[', min_freq, ',', max_freq, ']'
 print 'k_percentage:', map(lambda k_p: str(k_p) + '%', k_percentages)
-QualityUtil.printInfo()
+QualityUtil.printInfo(x_scale, y_scale)
 print '-------------------------------------------------'
 print 'Finished!', count, 'keywords processed,', end - start, 'seconds spent.'
