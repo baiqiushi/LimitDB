@@ -134,6 +134,17 @@ class PostgreSQLUtil:
         results = map(lambda record: record[0], results)
         return results
 
+    def queryKValuesInCount(self, p_min_count, p_max_count, p_tableName='wordkvalues'):
+        l_sql = 'SELECT word, count, k70, k75, k80, k85, k90, k95' \
+                '  FROM ' + p_tableName + \
+                ' WHERE count >= ' + str(p_min_count) + \
+                '   and count <= ' + str(p_max_count) + \
+                ' ORDER BY count DESC'
+        results = self.query(l_sql)
+        # convert the sub-tuples into lists
+        results = map(lambda record: list(record), results)
+        return results
+
 
 def test():
     db = PostgreSQLUtil()

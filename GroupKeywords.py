@@ -12,6 +12,36 @@ from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
 
 
+###########################################################
+#   Configurations
+###########################################################
+database = Conf.DATABASE
+tableName = Conf.TABLE
+
+# Keywords frequency range
+min_freq = 5000
+max_freq = 4000000
+
+# GroupByFrequency
+unit_freq = 5000
+max_density = 100
+
+# KMeans parameter
+K = 100
+# How many curves are in one cluster
+curve_density = 60
+
+# Group by sample sub-curves
+start_pk = 50
+end_pk = 95
+
+db = DatabaseFactory.getDatabase(database)
+keywords = KeywordsUtil.pickAllInFrequencyRange(min_freq, max_freq)
+
+k_percentage = range(5, 100, 5)
+target_quality = range(70, 100, 5)
+
+
 # get the number of keywords in this frequency range
 def getNumOfKeywords(p_min_freq, p_max_freq):
     results = [keyword for keyword in keywords if p_min_freq <= keyword[1] < p_max_freq]
@@ -22,6 +52,13 @@ def getNumOfKeywords(p_min_freq, p_max_freq):
 # [keyword, frequency, q(5%), q(10%), ..., q(95%)]
 def getCurvesOfKeywords(p_min_freq, p_max_freq, p_curveTableName):
     results = db.queryCurveInCount(p_min_freq, p_max_freq, p_curveTableName)
+    return results
+
+
+# get the k values data for given frequency range
+# [keyword, frequency, k(0.7), k(0.75), ......, k(0.95)]
+def getKValuesOfKeywords(p_min_freq, p_max_freq, p_kValuesTableName):
+    results = db.queryKValuesInCount(p_min_freq, p_max_freq, p_kValuesTableName)
     return results
 
 
@@ -37,9 +74,26 @@ def getAnalyzedCurvesOfKeywords(p_min_freq, p_max_freq):
 def plotCurves(p_pp, p_curves, p_title, p_showLegend=True):
     plt.figure()
     for curve in p_curves:
+        print k_percentage
+        print curve[2:21]
         plt.plot(k_percentage, curve[2:21], label=(curve[0] + ":" + str(curve[1])))
     plt.xlabel('K Percentage')
     plt.ylabel('Quality')
+    plt.title(p_title)
+    plt.grid(True)
+    if p_showLegend:
+        plt.legend()
+    plt.savefig(p_pp, format='pdf')
+
+
+# plot given p_k_values into one image
+# p_k_values: in the format as [keyword, frequency, k(0.7), k(0.75), ..., k(0.95)]
+def plotKValues(p_pp, p_k_values, p_title, p_showLegend=True):
+    plt.figure()
+    for k_values in p_k_values:
+        plt.plot(target_quality, k_values[2:8], label=(k_values[0] + ":" + str(k_values[1])))
+    plt.xlabel('Target Quality')
+    plt.ylabel('K Value')
     plt.title(p_title)
     plt.grid(True)
     if p_showLegend:
@@ -272,6 +326,16 @@ def plotCurvesByLabels(p_pp, p_curves, p_labels):
         plotCurves(p_pp, l_label_curves, "Group " + str(label) + ": " + str(len(l_label_curves)) + " keywords")
 
 
+def plotKValuesByLabels(p_pp, p_k_values, p_labels):
+    # plot the k_values for each cluster
+    for label in range(0, len(set(p_labels)), 1):
+        l_label_k_values = []
+        for i in range(0, len(p_labels), 1):
+            if p_labels[i] == label:
+                l_label_k_values.append(p_k_values[i])
+        plotKValues(p_pp, l_label_k_values, "Group " + str(label) + ": " + str(len(l_label_k_values)) + " keywords")
+
+
 def tagLabels(p_curves, p_labels):
     for i in range(0, len(p_curves), 1):
         p_curves[i].append(p_labels[i])
@@ -290,7 +354,7 @@ def groupByCurves(p_min_freq, p_max_freq, p_k=10):
     l_curveTableName = 'wordcurve'
     l_curves = getCurvesOfKeywords(p_min_freq, p_max_freq, l_curveTableName)
     # get rid of word and count fields
-    l_vector_curves = map(lambda cur: cur[2:20], l_curves)
+    l_vector_curves = map(lambda cur: cur[2:21], l_curves)
 
     # 1. K-Means
     l_km = KMeans(n_clusters=p_k)
@@ -313,7 +377,7 @@ def groupBySampleCurves(p_min_freq, p_max_freq, p_start_kp, p_end_kp, p_k=10):
     # get rid of word and count fields and get curve in range [p_start_kp, p_end_kp]
     l_start_index = k_percentage.index(p_start_kp) + 2
     l_end_index = k_percentage.index(p_end_kp) + 2
-    l_vector_curves = map(lambda cur: cur[l_start_index:l_end_index], l_sampleCurves)
+    l_vector_curves = map(lambda cur: cur[l_start_index:l_end_index + 1], l_sampleCurves)
 
     # 1. K-Means
     l_km = KMeans(n_clusters=p_k)
@@ -333,6 +397,42 @@ def groupBySampleCurves(p_min_freq, p_max_freq, p_start_kp, p_end_kp, p_k=10):
     l_curves = getCurvesOfKeywords(p_min_freq, p_max_freq, l_curveTableName)
     pp = PdfPages('groupCurvesBySample_f' + str(p_min_freq) + '_f' + str(p_max_freq) + '_k' + str(p_k) + '_kp' + str(p_start_kp) + '.pdf')
     plotCurvesByLabels(pp, l_curves, l_km.labels_)
+    pp.close()
+
+
+def groupBySampleKValues(p_min_freq, p_max_freq, p_k=10):
+    # get all sample k values
+    l_sampleKValuesTableName = 'wordkvalues_sample'
+    l_sampleKValues = getKValuesOfKeywords(p_min_freq, p_max_freq, l_sampleKValuesTableName)
+    # get rid of word and count fields and get k values
+    l_vector_k_values = map(lambda cur: cur[2:8], l_sampleKValues)
+
+    # 1. K-Means
+    l_km = KMeans(n_clusters=p_k)
+    l_km.fit(l_vector_k_values)
+    # plot the same labeled curves in one plot
+    pp = PdfPages('groupSampleKValues_f' + str(p_min_freq) + '_f' + str(p_max_freq) + '_k' + str(p_k) + '.pdf')
+    plotKValuesByLabels(pp, l_sampleKValues, l_km.labels_)
+    pp.close()
+
+    # 2. write the labeled k values to csv file
+    # label K-Means
+    l_labeled_k_values = tagLabels(l_sampleKValues, l_km.labels_)
+    writeOutCurves(l_labeled_k_values, 'keyword_sample_k_values_grouped_f' + str(p_min_freq) + '_f' + str(p_max_freq) + '_k' + str(p_k) + '.csv')
+
+    # 3. plot the curves from original dataset based on clustering results on sample k values
+    l_curveTableName = 'wordcurve'
+    l_curves = getCurvesOfKeywords(p_min_freq, p_max_freq, l_curveTableName)
+    pp = PdfPages('groupCurvesBySampleKValues_f' + str(p_min_freq) + '_f' + str(p_max_freq) + '_k' + str(p_k) + '_kp' + '.pdf')
+    plotCurvesByLabels(pp, l_curves, l_km.labels_)
+    pp.close()
+
+    # 4. plot the k values from original dataset based on clustering results on sample k values
+    l_kValuesTableName = 'wordkvalues'
+    l_kValues = getKValuesOfKeywords(p_min_freq, p_max_freq, l_kValuesTableName)
+    pp = PdfPages(
+        'groupKValuesBySampleKValues_f' + str(p_min_freq) + '_f' + str(p_max_freq) + '_k' + str(p_k) + '_kp' + '.pdf')
+    plotKValuesByLabels(pp, l_kValues, l_km.labels_)
     pp.close()
 
 
@@ -427,31 +527,6 @@ def verifyOrderBetweenSampleAndOriginal(p_keyword):
 ###########################################################
 #  Run Script
 ###########################################################
-database = Conf.DATABASE
-tableName = Conf.TABLE
-
-# Keywords frequency range
-min_freq = 5000
-max_freq = 4000000
-
-# GroupByFrequency
-unit_freq = 5000
-max_density = 100
-
-# KMeans parameter
-K = 100
-# How many curves are in one cluster
-curve_density = 60
-
-# Group by sample sub-curves
-start_pk = 5
-end_pk = 95
-
-db = DatabaseFactory.getDatabase(database)
-keywords = KeywordsUtil.pickAllInFrequencyRange(min_freq, max_freq)
-
-k_percentage = range(5, 100, 5)
-
 
 # print '================================================='
 # print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
@@ -578,59 +653,74 @@ k_percentage = range(5, 100, 5)
 # verifyOrderBetweenSampleAndOriginal('need')
 # verifyOrderBetweenSampleAndOriginal('weekend')
 
-# print '================================================='
-# print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
-# print 'Approach 7 : Group by curves from sample data set clustering by K-Means'
-# print '================================================='
-# print 'table:', tableName
-# print 'frequency range:[', min_freq, ',', max_freq, ']'
-# print 'curves range:[', start_pk, ',', end_pk, ']'
-# print 'K:', K
-# print '================================================='
-# start = time.time()
-# groupBySampleCurves(min_freq, max_freq, start_pk, end_pk, K)
-# end = time.time()
-# print '-------------------------------------------------'
-# print 'Approach 7 is done!'
-# print 'Total time:', end - start
-
 print '================================================='
 print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
-print 'Approach 8 : Group by curves from sample data set clustering by K-Means but bounded by frequency ranges'
+print 'Approach 7 : Group by curves from sample data set clustering by K-Means'
 print '================================================='
 print 'table:', tableName
 print 'frequency range:[', min_freq, ',', max_freq, ']'
 print 'curves range:[', start_pk, ',', end_pk, ']'
-print 'curves density:', curve_density
+print 'K:', K
 print '================================================='
 start = time.time()
-# Divide the frequency range into ranges from min to max with step increasing exponentially:
-# min - min * freq_step^2
-# e.g. freq_step = 2:
-# 5000 - 5000 * 2
-# 10000 - 10000 * 4
-# 40000 - 20000 * 16
-# ... ...
-freq_step = 2
-i_min_freq = min_freq
-i_max_freq = min_freq
-while i_min_freq < max_freq:
-    i_min_freq = i_max_freq
-    i_max_freq = min(i_min_freq * freq_step, max_freq)
-    freq_step = freq_step * freq_step
-    i_num_of_keywords = getNumOfKeywords(i_min_freq, i_max_freq)
-    if i_num_of_keywords > curve_density:
-        i_k = int(i_num_of_keywords / curve_density)
-    elif i_num_of_keywords > 3:
-        i_k = 3
-    elif i_num_of_keywords > 0:
-        i_k = 1
-    else:
-        continue
-    groupBySampleCurves(i_min_freq, i_max_freq, start_pk, end_pk, i_k)
+groupBySampleCurves(min_freq, max_freq, start_pk, end_pk, K)
 end = time.time()
 print '-------------------------------------------------'
-print 'Approach 8 is done!'
+print 'Approach 7 is done!'
 print 'Total time:', end - start
+
+# print '================================================='
+# print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+# print 'Approach 8 : Group by curves from sample data set clustering by K-Means but bounded by frequency ranges'
+# print '================================================='
+# print 'table:', tableName
+# print 'frequency range:[', min_freq, ',', max_freq, ']'
+# print 'curves range:[', start_pk, ',', end_pk, ']'
+# print 'curves density:', curve_density
+# print '================================================='
+# start = time.time()
+# # Divide the frequency range into ranges from min to max with step increasing exponentially:
+# # min - min * freq_step^2
+# # e.g. freq_step = 2:
+# # 5000 - 5000 * 2
+# # 10000 - 10000 * 4
+# # 40000 - 20000 * 16
+# # ... ...
+# freq_step = 2
+# i_min_freq = min_freq
+# i_max_freq = min_freq
+# while i_min_freq < max_freq:
+#     i_min_freq = i_max_freq
+#     i_max_freq = min(i_min_freq * freq_step, max_freq)
+#     freq_step = freq_step * freq_step
+#     i_num_of_keywords = getNumOfKeywords(i_min_freq, i_max_freq)
+#     if i_num_of_keywords > curve_density:
+#         i_k = int(i_num_of_keywords / curve_density)
+#     elif i_num_of_keywords > 3:
+#         i_k = 3
+#     elif i_num_of_keywords > 0:
+#         i_k = 1
+#     else:
+#         continue
+#     groupBySampleCurves(i_min_freq, i_max_freq, start_pk, end_pk, i_k)
+# end = time.time()
+# print '-------------------------------------------------'
+# print 'Approach 8 is done!'
+# print 'Total time:', end - start
+
+# print '================================================='
+# print '  ' + database + '  Experiments - 4.2 Keywords Grouping'
+# print 'Approach 9 : Group by k values from sample data set clustering by K-Means'
+# print '================================================='
+# print 'table:', tableName
+# print 'frequency range:[', min_freq, ',', max_freq, ']'
+# print 'K:', K
+# print '================================================='
+# start = time.time()
+# groupBySampleKValues(min_freq, max_freq, K)
+# end = time.time()
+# print '-------------------------------------------------'
+# print 'Approach 9 is done!'
+# print 'Total time:', end - start
 
 db.close()
