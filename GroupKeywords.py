@@ -423,7 +423,7 @@ def groupBySampleKValues(p_min_freq, p_max_freq, p_k=10):
     # 3. plot the curves from original dataset based on clustering results on sample k values
     l_curveTableName = 'wordcurve'
     l_curves = getCurvesOfKeywords(p_min_freq, p_max_freq, l_curveTableName)
-    pp = PdfPages('groupCurvesBySampleKValues_f' + str(p_min_freq) + '_f' + str(p_max_freq) + '_k' + str(p_k) + '_kp' + '.pdf')
+    pp = PdfPages('groupCurvesBySampleKValues_f' + str(p_min_freq) + '_f' + str(p_max_freq) + '_k' + str(p_k) + '.pdf')
     plotCurvesByLabels(pp, l_curves, l_km.labels_)
     pp.close()
 
@@ -431,7 +431,7 @@ def groupBySampleKValues(p_min_freq, p_max_freq, p_k=10):
     l_kValuesTableName = 'wordkvalues'
     l_kValues = getKValuesOfKeywords(p_min_freq, p_max_freq, l_kValuesTableName)
     pp = PdfPages(
-        'groupKValuesBySampleKValues_f' + str(p_min_freq) + '_f' + str(p_max_freq) + '_k' + str(p_k) + '_kp' + '.pdf')
+        'groupKValuesBySampleKValues_f' + str(p_min_freq) + '_f' + str(p_max_freq) + '_k' + str(p_k) + '.pdf')
     plotKValuesByLabels(pp, l_kValues, l_km.labels_)
     pp.close()
 
