@@ -13,6 +13,9 @@ tableName = Conf.TABLE
 csvFileName_k_values = 'keyword_k_values.csv'
 csvFileName_k_ratios = 'keyword_k_ratios.csv'
 
+# Resolution Scale
+x_scale = 1
+y_scale = 1
 
 # Keywords frequency range
 min_freq = 5000
@@ -58,7 +61,7 @@ def generateKValues(p_min_freq, p_max_freq):
                 # 2. for each target quality calculate the k value using binary search
                 t1 = time.time()
                 for quality in qualities:
-                    k, kp = QualityUtil.findKOfQuality(totalCoordinates, float(quality)/100.0)
+                    k, kp = QualityUtil.findKOfQuality(totalCoordinates, float(quality)/100.0, x_scale, y_scale)
                     k_values.append(k)
                     k_ratios.append(kp)
 
@@ -88,7 +91,7 @@ print '================================================='
 print 'table:', tableName
 print 'frequency range:[', min_freq, ',', max_freq, ']'
 print 'target qualities:', map(lambda quality: str(quality) + '%', qualities)
-QualityUtil.printInfo()
+QualityUtil.printInfo(x_scale, y_scale)
 print '-------------------------------------------------'
 start = time.time()
 count = generateKValues(min_freq, max_freq)
@@ -99,6 +102,6 @@ print '================================================='
 print 'table:', tableName
 print 'frequency range:[', min_freq, ',', max_freq, ']'
 print 'target qualities:', map(lambda quality: str(quality) + '%', qualities)
-QualityUtil.printInfo()
+QualityUtil.printInfo(x_scale, y_scale)
 print '-------------------------------------------------'
 print 'Finished!', count, 'keywords processed,', end - start, 'seconds spent.'

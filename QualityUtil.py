@@ -10,7 +10,7 @@ def printInfo(p_x_scale=1, p_y_scale=1):
     print 'resolution:', int(res_x/p_x_scale), 'x', int(res_y/p_y_scale)
 
 
-def coordinatesToImage(ar, p_res_x, p_res_y, r=((-170, -60), (15, 70))):
+def coordinatesToImage(ar, p_res_x=res_x, p_res_y=res_y, r=((-170, -60), (15, 70))):
     H, x, y = np.histogram2d(ar[:, 0], ar[:, 1], bins=(p_res_x, p_res_y), range=r)
     return H
 
