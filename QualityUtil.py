@@ -35,6 +35,21 @@ def phQualityOfKPercentage(p_totalCoordinates, p_k_percentage, p_x_scale=1, p_y_
     return similarity
 
 
+def phQualityOfCoordinates(p_totalCoordinates, p_coordinates, p_x_scale=1, p_y_scale=1):
+    # ground truth perfect image
+    totalCoordinates = np.array(p_totalCoordinates)
+    perfectImage = coordinatesToImage(totalCoordinates, int(res_x/p_x_scale), int(res_y/p_y_scale))
+    # target image
+    targetCoordinates = np.array(p_coordinates)
+    targetImage = coordinatesToImage(targetCoordinates, int(res_x / p_x_scale), int(res_y / p_y_scale))
+    # calculate similarity
+    perfectNumOfCells = np.count_nonzero(perfectImage)
+    targetNumOfCells = np.count_nonzero(targetImage)
+    similarity = float(targetNumOfCells) / float(perfectNumOfCells)
+
+    return similarity
+
+
 # Use binary search to find the limit k value for target quality
 # p_totalCoordinates - list of all coordinates of perfect image
 # p_quality - target quality value, float in [0, 1]

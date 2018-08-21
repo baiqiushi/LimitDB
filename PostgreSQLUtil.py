@@ -38,6 +38,13 @@ class PostgreSQLUtil:
             sql += " limit " + str(limit)
         return self.query(sql)
 
+    def GetCoordinateRandomly(self, tableName, keyword, ratio):
+        sql = "select x, y from " + tableName + \
+              " where to_tsvector('english',text)@@to_tsquery('english','" + keyword + "')"
+        if ratio >= 0:
+            sql += " and random() <= " + str(ratio)
+        return self.query(sql)
+
     def GetID(self, tableName, keyword, limit):
         sql = "select id from " + tableName + \
               " where to_tsvector('english',text)@@to_tsquery('english','" + keyword + "')"
