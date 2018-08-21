@@ -34,7 +34,7 @@ def plotCurves(p_fileName, p_curves, p_title, p_showLegend=True):
     for i_label in p_curves.keys():
         print i_label
         print p_curves[i_label]
-        plt.plot(range(1, 21, 1), p_curves[i_label], label=( str(i_label) + '%'))
+        plt.plot(range(1, 21, 1), p_curves[i_label], label=(str(i_label) + '%'))
     plt.xlabel('the (i)th run')
     plt.ylabel('Quality(%)')
     plt.title(p_title)
@@ -91,7 +91,7 @@ for i in range(0, 20, 1):
 # 3. Plot the qualities in one canvas for each keyword
 print 'Plotting images ...'
 for keyword in keywords:
-    i_fileName = keyword[0] + '_' + keyword[1]
+    i_fileName = keyword[0] + '_' + str(keyword[1])
     plotCurves(i_fileName, qualities[keyword[0]], 'Random Function Qualities Stability - Keyword "' + keyword[0] + '"')
 
 end = time.time()
