@@ -67,7 +67,7 @@ def plot2SeriesCurves(p_fileName, p_label1, p_curves1, p_label2, p_curves2, p_ti
         if i2 == 1:
             plt.plot(range(1, 21, 1), p_curves2[i_label], 'ro-', label=p_label2)
         else:
-            plt.plot(range(1, 21, 1), p_curves2[i_label], 'ro-', label=p_label2)
+            plt.plot(range(1, 21, 1), p_curves2[i_label], 'ro-')
     plt.xlabel('the (i)th run')
     plt.ylabel('Quality(%)')
     plt.title(p_title)
@@ -114,9 +114,9 @@ for i in range(0, 20, 1):
     for k_p in k_percentages:
         for keyword in keywords:
             l_random_ratio = float(k_p) / 100.0
-            L_limit_k = int(float(k_p) * keyword[1] / 100.0)
+            l_limit_k = int(float(k_p) * keyword[1] / 100.0)
             l_coordinates_random = db.GetCoordinateRandomly(tableName, keyword[0], l_random_ratio)
-            l_coordinates_limit = db.GetCoordinate(tableName, keyword[0], L_limit_k)
+            l_coordinates_limit = db.GetCoordinate(tableName, keyword[0], l_limit_k)
             l_quality_random = QualityUtil.phQualityOfCoordinates(totalCoordinates[keyword[0]], l_coordinates_random)
             l_quality_limit = QualityUtil.phQualityOfCoordinates(totalCoordinates[keyword[0]], l_coordinates_limit)
             if k_p not in qualities_random[keyword[0]]:
