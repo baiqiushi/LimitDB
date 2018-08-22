@@ -23,6 +23,9 @@ keywords = [KeywordsUtil.pickAllInFrequencyRange(5418, 5419)[0],  # soccer
             KeywordsUtil.pickAllInFrequencyRange(500000, 600000)[0],  # appli
             KeywordsUtil.pickAllInFrequencyRange(990000, 1000000)[0]]  # work
 
+# keywords = [('job', 495)]
+
+
 k_percentages = [30, 50, 70, 90]
 
 
@@ -114,7 +117,9 @@ for i in range(0, 20, 1):
     for k_p in k_percentages:
         for keyword in keywords:
             l_random_ratio = float(k_p) / 100.0
-            l_limit_k = int(float(k_p) * keyword[1] / 100.0)
+            # print 'perfect len =', len(totalCoordinates[keyword[0]])
+            l_limit_k = int(float(k_p) * len(totalCoordinates[keyword[0]]) / 100.0)
+            # print 'l_limit_k =', l_limit_k
             l_coordinates_random = db.GetCoordinateRandomly(tableName, keyword[0], l_random_ratio)
             l_coordinates_limit = db.GetCoordinate(tableName, keyword[0], l_limit_k)
             l_quality_random = QualityUtil.phQualityOfCoordinates(totalCoordinates[keyword[0]], l_coordinates_random)
