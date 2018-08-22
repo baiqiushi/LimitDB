@@ -17,11 +17,11 @@ tableName = Conf.TABLE
 db = DatabaseFactory.getDatabase(database)
 
 # Choose 6 specific keywords
-keywords = [KeywordsUtil.pickallinfrequencyrange(5418, 5419)[0],  # soccer
-            KeywordsUtil.pickallinfrequencyrange(106875, 106877)[0],  # rain
-            KeywordsUtil.pickallinfrequencyrange(211000, 212000)[0],  # love
-            KeywordsUtil.pickallinfrequencyrange(500000, 600000)[0],  # appli
-            KeywordsUtil.pickallinfrequencyrange(990000, 1000000)[0]]  # work
+keywords = [KeywordsUtil.pickAllInFrequencyRange(5418, 5419)[0],  # soccer
+            KeywordsUtil.pickAllInFrequencyRange(106875, 106877)[0],  # rain
+            KeywordsUtil.pickAllInFrequencyRange(211000, 212000)[0],  # love
+            KeywordsUtil.pickAllInFrequencyRange(500000, 600000)[0],  # appli
+            KeywordsUtil.pickAllInFrequencyRange(990000, 1000000)[0]]  # work
 
 k_percentages = [30, 50, 70, 90]
 
