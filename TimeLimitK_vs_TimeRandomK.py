@@ -93,11 +93,8 @@ for i in range(0, 3, 1):
             print '[Total time]', time.time() - t0, \
                 '[Progress]', str(progress * 50 / (len(keywords) * len(k_percentages) * 3)) + '%'
 
-            print 'restarting DB ...'
-            db.restart()
-
-        print 'restarting DB ...'
-        db.restart()
+        print 'sending dummy query ...'
+        db.queryDummy()
 
     print 'restarting DB ...'
     db.restart()
