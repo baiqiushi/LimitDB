@@ -68,12 +68,16 @@ class PostgreSQLUtil:
             sql += " limit " + str(limit)
         return self.query(sql)
 
-    def restart(self):
+    def restart(self, version=9.6):
         if sys.platform == 'darwin':
             os.system('brew services stop postgresql')
             os.system('brew services start postgresql')
         elif sys.platform == 'linux2':
-            os.system('sudo systemctl restart postgresql')
+            if version >= 9.5:
+                print 'sudo systemctl restart postgresql-' + str(version)
+                os.system('sudo systemctl restart postgresql-' + str(version))
+            else:
+                os.system('sudo systemctl restart postgresql')
 
         i = 0
         while i <= 10:
