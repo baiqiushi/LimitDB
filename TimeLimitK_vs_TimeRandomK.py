@@ -84,6 +84,10 @@ for keyword in keywords:
     time_limit[keyword[0]] = {}
 
 print 'Start running queries with random k percentages ...'
+print 'restarting DB ...'
+db.restart()
+print 'sending dummy query ...'
+db.queryDummy()
 progress = 0
 t0 = time.time()
 for i in range(0, 3, 1):
@@ -115,6 +119,10 @@ for i in range(0, 3, 1):
     db.restart()
 
 print 'Start running queries with limit k percentages ...'
+print 'restarting DB ...'
+db.restart()
+print 'sending dummy query ...'
+db.queryDummy()
 progress = 0
 for i in range(0, 3, 1):
     for k_p in k_percentages:
