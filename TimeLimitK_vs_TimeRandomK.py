@@ -29,8 +29,23 @@ k_percentages = [30, 50, 70, 80, 90]
 def plot2SeriesCurves(p_fileName, p_label1, p_curves1, p_label2, p_curves2, p_title, p_showLegend=True):
     pp = PdfPages(p_fileName + '.pdf')
     plt.figure()
-    plt.plot(p_curves1.keys(), p_curves1.values(), 'bo-', label=p_label1)
-    plt.plot(p_curves2.keys(), p_curves2.values(), 'ro-', label=p_label2)
+
+    l_keys = sorted(p_curves1.keys())
+    l_values = []
+    for i_key in l_keys:
+        l_values.append(p_curves1[i_key])
+    print l_keys
+    print l_values
+    plt.plot(l_keys, l_values, 'bo-', label=p_label1)
+
+    l_keys = sorted(p_curves2.keys())
+    l_values = []
+    for i_key in l_keys:
+        l_values.append(p_curves2[i_key])
+    print l_keys
+    print l_values
+    plt.plot(l_keys, l_values, 'ro-', label=p_label2)
+
     plt.xlabel('K Percentages')
     plt.ylabel('Time(s)')
     plt.title(p_title)
