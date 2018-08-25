@@ -7,8 +7,9 @@ import KeywordsUtil
 import QualityUtil
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 import numpy as np
-from itertools import repeat
 
 ###########################################################
 #   Configurations
@@ -55,6 +56,23 @@ def plotCurves(p_fileName, p_labels, p_x, p_curves, p_x_label, p_y_label, p_titl
     plt.grid(True)
     if p_showLegend:
         plt.legend()
+    plt.savefig(pp, format='pdf')
+    pp.close()
+
+
+def plotSurface(p_fileName, p_x, p_y, p_z, p_x_label, p_y_label, p_z_label, p_title, p_angle):
+    pp = PdfPages(p_fileName + '.pdf')
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.plot_surface(p_x, p_y, p_z, rstride=8, cstride=8, alpha=0.3)
+    cset = ax.contour(p_x, p_y, p_z, zdir='z', cmap=cm.coolwarm)
+    cset = ax.contour(p_x, p_y, p_z, zdir='x', cmap=cm.coolwarm)
+    cset = ax.contour(p_x, p_y, p_z, zdir='y', cmap=cm.coolwarm)
+    ax.set_xlabel(p_x_label)
+    ax.set_ylabel(p_y_label)
+    ax.set_zlabel(p_z_label)
+    ax.view_init(30, p_angle)
+    plt.title(p_title)
     plt.savefig(pp, format='pdf')
     pp.close()
 
@@ -193,6 +211,43 @@ for keyword in keywords:
     plotCurves(i_fileName, i_labels, i_x, i_curves, i_x_label, i_y_label, i_title)
 
     # (5) Plot Q-k-r surface
+    i_fileName = i_fileName_head + '_q_k_r_0.pdf'
+    X, Y = np.meshgrid(k_percentages, r_percentages)
+    Z = np.array(qualities[keyword[0]])
+    i_x_label = 'Limit k(%)'
+    i_y_label = 'Random r(%)'
+    i_z_label = 'Quality(%)'
+    i_title = keyword[0] + ' - Q-k-r surface'
+    plotSurface(i_fileName, X, Y, Z, i_x_label, i_y_label, i_z_label, i_title, 0)
+
+    i_fileName = i_fileName_head + '_q_k_r_90.pdf'
+    plotSurface(i_fileName, X, Y, Z, i_x_label, i_y_label, i_z_label, i_title, 90)
+
+    i_fileName = i_fileName_head + '_q_k_r_180.pdf'
+    plotSurface(i_fileName, X, Y, Z, i_x_label, i_y_label, i_z_label, i_title, 180)
+
+    i_fileName = i_fileName_head + '_q_k_r_270.pdf'
+    plotSurface(i_fileName, X, Y, Z, i_x_label, i_y_label, i_z_label, i_title, 270)
+
+    # (6) Plot T-k-r surface
+    i_fileName = i_fileName_head + '_t_k_r_0.pdf'
+    X, Y = np.meshgrid(k_percentages, r_percentages)
+    Z = np.array(times[keyword[0]])
+    i_x_label = 'Limit k(%)'
+    i_y_label = 'Random r(%)'
+    i_z_label = 'Execution Time(s)'
+    i_title = keyword[0] + ' - T-k-r surface'
+    plotSurface(i_fileName, X, Y, Z, i_x_label, i_y_label, i_z_label, i_title, 0)
+
+    i_fileName = i_fileName_head + '_t_k_r_90.pdf'
+    plotSurface(i_fileName, X, Y, Z, i_x_label, i_y_label, i_z_label, i_title, 90)
+
+    i_fileName = i_fileName_head + '_t_k_r_180.pdf'
+    plotSurface(i_fileName, X, Y, Z, i_x_label, i_y_label, i_z_label, i_title, 180)
+
+    i_fileName = i_fileName_head + '_t_k_r_270.pdf'
+    plotSurface(i_fileName, X, Y, Z, i_x_label, i_y_label, i_z_label, i_title, 270)
+
 
 end = time.time()
 print '================================================='
