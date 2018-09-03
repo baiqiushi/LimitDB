@@ -4,11 +4,8 @@ import time
 import Conf
 import DatabaseFactory
 import KeywordsUtil
-import QualityUtil
 from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib import cm
 import numpy as np
 
 ###########################################################
@@ -19,18 +16,15 @@ tableName = Conf.TABLE
 
 db = DatabaseFactory.getDatabase(database)
 
-# Choose 6 specific keywords
-keywords = [KeywordsUtil.pickAllInFrequencyRange(5418, 5419)[0],  # soccer
-            KeywordsUtil.pickAllInFrequencyRange(106875, 106877)[0],  # rain
-            KeywordsUtil.pickAllInFrequencyRange(211000, 212000)[0],  # love
-            KeywordsUtil.pickAllInFrequencyRange(500000, 600000)[0],  # appli
-            KeywordsUtil.pickAllInFrequencyRange(990000, 1000000)[0],  # work
-            KeywordsUtil.pickAllInFrequencyRange(3000000, 4000000)[0]]  # job
-
+# Choose keywords with similar frequency
+frequency = 50000
+numOfKeywords = 10
+keywords = KeywordsUtil.pickNearestKeywordToFrequency(frequency, 10)
+print keywords
 # keywords = [('job', 495)]
 
 k_percentages = range(5, 100, 5)
-r_percentages = range(10, 110, 10)
+r_percentages = [30, 60, 90]  # range(10, 110, 10)
 
 keyword_labels = map(lambda k: k[0] + ':' + str(k[1]), keywords)
 k_labels = map(lambda k_p: str(k_p) + '%', k_percentages)
@@ -81,6 +75,7 @@ print 'Collecting cardinalities for all keywords ...'
 cardinalities = {}
 for keyword in keywords:
     cardinalities[keyword[0]] = db.GetCount(tableName, keyword[0])
+print cardinalities
 
 # 2. For each r value:
 #      For each k value:
@@ -115,7 +110,7 @@ for r_p in r_percentages:
             db.queryDummy()
 
             l_random_r = float(r_p) / 100.0
-            l_limit_k = int(float(k_p) * len(cardinalities[keyword[0]]) / 100.0)
+            l_limit_k = int(float(k_p) * cardinalities[keyword[0]] / 100.0)
 
             t_start = time.time()
             l_coordinates_hybrid = db.GetCoordinateHybrid(tableName, keyword[0], l_random_r, l_limit_k)
@@ -135,7 +130,7 @@ print times
 print 'Plotting images ...'
 for i in range(0, len(r_percentages), 1):
     r = r_labels[i]
-    i_fileName_head = 'r=' + str(r)
+    i_fileName_head = 'freq=' + str(frequency) + '_r=' + str(r)
     # (1) Plot T-k curves of different keywords
     i_fileName = i_fileName_head + '_t_k'
     i_labels = keyword_labels
