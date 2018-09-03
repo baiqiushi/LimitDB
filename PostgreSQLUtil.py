@@ -61,6 +61,14 @@ class PostgreSQLUtil:
             sql += " limit " + str(limit)
         return self.query(sql)
 
+    def GetCount(self, tableName, keyword):
+        sql = "select count(1) from " + tableName + \
+              " where to_tsvector('english',text)@@to_tsquery('english','" + keyword + "')"
+        results = self.query(sql)
+        if len(results) < 1:
+            return 0
+        return results[0][0]
+
     def queryLimit(self, tableName, keyword, limit):
         sql = "select x, y from " + tableName + \
               " where to_tsvector('english',text)@@to_tsquery('english','" + keyword + "')"
@@ -168,24 +176,26 @@ class PostgreSQLUtil:
 
 def test():
     db = PostgreSQLUtil()
-    result = db.GetID('coord_tweets', 'job', 10)
-    print result
-    db.restart()
-    result = db.queryDummy()
-    print result
-    result = db.GetCoordinate('coord_tweets', 'job', 10)
-    print result
-    result = db.queryLimitWordInCountOrderBy(10000, 30000, 20, 'random')
-    print result
-    result = db.queryLimitWordNearCount(2000000, 2)
-    print result
-    result = db.queryLimit('coord_tweets', 'job', 10)
-    print result
-    result = db.queryLimitOrderBy('coord_tweets', 'job', 10, 'x')
-    print result
-    result = db.queryCurveInCount(5000, 5020)
-    print result
-    result = db.queryLimitWordInCurveGroupOrderBy(0, 3, 'random')
+    # result = db.GetID('coord_tweets', 'job', 10)
+    # print result
+    # db.restart()
+    # result = db.queryDummy()
+    # print result
+    # result = db.GetCoordinate('coord_tweets', 'job', 10)
+    # print result
+    # result = db.queryLimitWordInCountOrderBy(10000, 30000, 20, 'random')
+    # print result
+    # result = db.queryLimitWordNearCount(2000000, 2)
+    # print result
+    # result = db.queryLimit('coord_tweets', 'job', 10)
+    # print result
+    # result = db.queryLimitOrderBy('coord_tweets', 'job', 10, 'x')
+    # print result
+    # result = db.queryCurveInCount(5000, 5020)
+    # print result
+    # result = db.queryLimitWordInCurveGroupOrderBy(0, 3, 'random')
+    # print result
+    result = db.GetCount('coord_tweets', 'work')
     print result
 
 

@@ -251,8 +251,8 @@ for keyword in keywords:
 
 end = time.time()
 print '================================================='
-print '  ' + database + '  Experiments - Test Quality Stability'
-print '- Random Function'
+print '  ' + database + '  Experiments - Draw Q-k and T-k curve for given r=R '
+print '- Hybrid approach'
 print '================================================='
 print 'table:', tableName
 print 'keywords:', keywords
