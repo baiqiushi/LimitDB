@@ -36,6 +36,8 @@ POSTGRESQL_CONFIG = {
     'database': 'limitdb'
 }
 
-POSTGRESQL_DUMMY_SQL = 'select count(1) from ' \
-                       '(select t.text from dummy_table t where t.id < 865350497200371700) p ' \
-                       'where p.text like \'%lo%\' '
+# POSTGRESQL_DUMMY_SQL = 'select count(1) from ' \
+#                        '(select t.text from dummy_table t where t.id < 865350497200371700) p ' \
+#                        'where p.text like \'%lo%\' '
+
+POSTGRESQL_DUMMY_SQL = 'select * from dummy_table'

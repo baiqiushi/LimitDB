@@ -99,9 +99,10 @@ for i in range(0, len(r_values), 1):
                 hit = True
                 k = i_rk[1]
         if not hit:
-            r_labels.remove(str(r_values[i]) + '%')
-            print 'remove', str(r_values[i]) + '%', 'from r_labels'
-            print r_labels
+            if str(r_values[i]) + '%' in r_labels:
+                r_labels.remove(str(r_values[i]) + '%')
+                print 'remove', str(r_values[i]) + '%', 'from r_labels'
+                print r_labels
             continue
 
         # Send a dummy query
