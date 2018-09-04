@@ -71,6 +71,6 @@ def findKROfQuality(p_keyword, p_quality, p_rs):
     for r in p_rs:
         k = findKOfQuality(p_keyword, p_quality, r, totalCoordinates)
         if k[0] > 0:
-            result.append([r, k])
+            result.append([r, k[0]])
 
     return result
