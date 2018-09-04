@@ -154,7 +154,7 @@ for i in range(0, len(r_percentages), 1):
     r = r_labels[i]
     i_fileName_head = 'freq=' + str(frequency) + '_r=' + str(r)
     # (1) Plot T-k curves of different keywords
-    i_fileName = i_fileName_head + '_t_k'
+    i_fileName = i_fileName_head + ('_t_kp' if usingKP else '_t_kv')
     i_labels = keyword_labels
     print 'i_labels:'
     print i_labels
