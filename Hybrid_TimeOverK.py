@@ -1,5 +1,5 @@
-# Time Over R
-# For a given k absolute value, plot T-r curves of different keywords in once canvas
+# Time Over K
+# For a given r value, Plot T-k curves of different keywords in one canvas
 import matplotlib
 matplotlib.use('Agg')
 import time
@@ -18,17 +18,30 @@ tableName = Conf.TABLE
 
 db = DatabaseFactory.getDatabase(database)
 
-# Choose keywords with different frequencies
-keywords = KeywordsUtil.pickNearestKeywordToFrequency(20000, 10)
-keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(30000, 10))
-keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(40000, 10))
-keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(50000, 10))
+# From what frequency, choose keywords
+frequency = 50000
+# For each frequency, how many keywords we choose
+numOfKeywords = 10
+# Using k percentage or k absolute values
+usingKP = False
+# if usingKP = False, the steps of k values
+k_step = 5000
 
+keywords = KeywordsUtil.pickNearestKeywordToFrequency(frequency, numOfKeywords)
 print keywords
 # keywords = [('job', 495)]
 
-k_values = [10000, 15000, 20000, 25000, 30000, 35000, 40000]  # range(5000, 100000, 5000)
-r_percentages = range(10, 110, 10)
+if usingKP:
+    k_percentages = range(5, 100, 5)
+else:
+    k_values = range(k_step, frequency, k_step)
+
+numOfKs = len(k_percentages) if usingKP else len(k_values)
+
+r_percentages = [25, 50, 75, 100]  # range(10, 110, 10)
+
+keyword_labels = map(lambda k: k[0] + ':' + str(k[1]), keywords)
+k_labels = k_percentages if usingKP else k_values
 r_labels = map(lambda rp: str(rp) + '%', r_percentages)
 
 
@@ -60,17 +73,30 @@ def plotCurves(p_fileName, p_labels, p_x, p_curves, p_x_label, p_y_label, p_titl
 #  Run Script
 ###########################################################
 print '================================================='
-print '  ' + database + '  Experiment - Time over r value '
+print '  ' + database + '  Experiment - Time over k percentage / value '
 print '- Hybrid approach'
 print '================================================='
 print 'table:', tableName
 print 'keywords:', keywords
-print 'k_values:', k_values
+if usingKP:
+    print 'k_percentage:', k_labels
+else:
+    print 'k_values:', k_values
 print 'r_percentage:', r_labels
 print '-------------------------------------------------'
 start = time.time()
 
-# 1. For each r value:
+# Only when using k percentages, we need to get cardinalities of keywords
+if usingKP:
+    # 1.Get cardinality for each keyword
+    # {'soccer': c1, 'rain': c2, ...}
+    print 'Collecting cardinalities for all keywords ...'
+    cardinalities = {}
+    for keyword in keywords:
+        cardinalities[keyword[0]] = db.GetCount(tableName, keyword[0])
+    print cardinalities
+
+# 2. For each r value:
 #      For each k value:
 #        For each keyword, run hybrid query:
 #          Send dummy query
@@ -84,7 +110,7 @@ for keyword in keywords:
     m = 0
     for row in r_percentages:
         times[keyword[0]].append([])
-        for col in k_values:
+        for n in range(0, numOfKs, 1):
             times[keyword[0]][m].append(0)
         m += 1
 
@@ -96,14 +122,17 @@ i = 0
 for r_p in r_percentages:
     print 'Processing r =', str(r_p) + '% ...'
     j = 0
-    for k in k_values:
-        print '    Processing k =', str(k) + ' ...'
+    # ks = k_percentages / k_values
+    ks = k_percentages if usingKP else k_values
+    for k in ks:
+        print '    Processing k =', str(k) + ('% ...' if usingKP else ' ...')
         for keyword in keywords:
             # Send a dummy query
             db.queryDummy()
 
             l_random_r = float(r_p) / 100.0
-            l_limit_k = k
+
+            l_limit_k = int(float(k) * cardinalities[keyword[0]] / 100.0) if usingKP else k
 
             t_start = time.time()
             l_coordinates_hybrid = db.GetCoordinateHybrid(tableName, keyword[0], l_random_r, l_limit_k)
@@ -113,47 +142,46 @@ for r_p in r_percentages:
 
             progress += 1
             print '[Total time]', time.time() - t0, \
-                '[Progress]', str(progress * 100 / (len(keywords) * len(k_values) * len(r_percentages))) + '%'
+                '[Progress]', str(progress * 100 / (len(keywords) * numOfKs * len(r_percentages))) + '%'
         j += 1
     i += 1
 
 print times
 
-# 3. Plot the T-r curves of different keywords in one canvas per k value
+# 3. Plot the T-k curves of different keywords in one canvas per r value
 print 'Plotting images ...'
-for i in range(0, len(k_values), 1):
-    k = k_values[i]
-    i_fileName_head = 'k=' + str(k)
-    # (1) Plot T-r curves of different keywords
-    i_fileName = i_fileName_head + '_t_r'
-    i_x = r_percentages
-    i_labels = []
+for i in range(0, len(r_percentages), 1):
+    r = r_labels[i]
+    i_fileName_head = 'freq=' + str(frequency) + '_r=' + str(r)
+    # (1) Plot T-k curves of different keywords
+    i_fileName = i_fileName_head + '_t_k'
+    i_labels = keyword_labels
+    print 'i_labels:'
+    print i_labels
+    i_x = k_labels
     i_curves = []
     print 'keywords:'
     for keyword in keywords:
-        if keyword[1] * 0.9 <= k:
-            continue
         print keyword[0]
-        i_labels.append(keyword[0] + ':' + str(keyword[1]))
-        i_curve = np.array(times[keyword[0]])[:, i]
+        i_curve = np.array(times[keyword[0]])[i, :]
         i_curves.append(i_curve)
-    print i_curves
-    print 'i_labels:'
-    print i_labels
-    i_x_label = 'Random r(%)'
+    i_x_label = 'Limit k(%)' if usingKP else 'Limit k'
     i_y_label = 'Execution Time(s)'
-    i_title = 'k=' + str(k) + ' - T-r curves of different keywords'
+    i_title = 'r=' + str(r) + ' - T-k curves of different keywords'
     print 'Plotting', i_title
     plotCurves(i_fileName, i_labels, i_x, i_curves, i_x_label, i_y_label, i_title)
 
 end = time.time()
 print '================================================='
-print '  ' + database + '  Experiments - Time over r value '
+print '  ' + database + '  Experiments - Time over k percentage / value '
 print '- Hybrid approach'
 print '================================================='
 print 'table:', tableName
 print 'keywords:', keywords
-print 'k_values:', k_values
+if usingKP:
+    print 'k_percentage:', k_labels
+else:
+    print 'k_values:', k_values
 print 'r_percentage:', r_labels
 print '-------------------------------------------------'
 print 'Finished!', end - start, 'seconds spent.'

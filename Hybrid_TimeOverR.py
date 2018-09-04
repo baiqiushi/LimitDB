@@ -1,5 +1,5 @@
-# Time Over R and K
-# For a given r value, Plot T-k curves of different keywords in one canvas
+# Time Over R
+# For a given k absolute value, plot T-r curves of different keywords in once canvas
 import matplotlib
 matplotlib.use('Agg')
 import time
@@ -18,19 +18,22 @@ tableName = Conf.TABLE
 
 db = DatabaseFactory.getDatabase(database)
 
-# Choose keywords with similar frequency
-frequency = 50000
+# From what frequency, choose keywords
+frequencies = [20000, 30000, 40000, 50000]
+# For each frequency, how many keywords we choose
 numOfKeywords = 10
-keywords = KeywordsUtil.pickNearestKeywordToFrequency(frequency, 10)
+
+
+# Choose keywords with different frequencies
+keywords = []
+for freq in frequencies:
+    keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(freq, numOfKeywords))
 print keywords
 # keywords = [('job', 495)]
 
-k_percentages = range(5, 100, 5)
-r_percentages = [30, 60, 90]  # range(10, 110, 10)
-
-keyword_labels = map(lambda k: k[0] + ':' + str(k[1]), keywords)
-k_labels = map(lambda k_p: str(k_p) + '%', k_percentages)
-r_labels = map(lambda r_p: str(r_p) + '%', r_percentages)
+k_values = [10000, 15000, 20000, 25000, 30000, 35000, 40000]  # range(5000, 100000, 5000)
+r_percentages = range(10, 110, 10)
+r_labels = map(lambda rp: str(rp) + '%', r_percentages)
 
 
 # plot given p_curves into one image
@@ -61,25 +64,17 @@ def plotCurves(p_fileName, p_labels, p_x, p_curves, p_x_label, p_y_label, p_titl
 #  Run Script
 ###########################################################
 print '================================================='
-print '  ' + database + '  Experiment - Time over (r, k) value '
+print '  ' + database + '  Experiment - Time over r value '
 print '- Hybrid approach'
 print '================================================='
 print 'table:', tableName
 print 'keywords:', keywords
-print 'k_percentage:', k_labels
+print 'k_values:', k_values
 print 'r_percentage:', r_labels
 print '-------------------------------------------------'
 start = time.time()
 
-# 1.Get cardinality for each keyword
-# {'soccer': c1, 'rain': c2, ...}
-print 'Collecting cardinalities for all keywords ...'
-cardinalities = {}
-for keyword in keywords:
-    cardinalities[keyword[0]] = db.GetCount(tableName, keyword[0])
-print cardinalities
-
-# 2. For each r value:
+# 1. For each r value:
 #      For each k value:
 #        For each keyword, run hybrid query:
 #          Send dummy query
@@ -93,7 +88,7 @@ for keyword in keywords:
     m = 0
     for row in r_percentages:
         times[keyword[0]].append([])
-        for col in k_percentages:
+        for col in k_values:
             times[keyword[0]][m].append(0)
         m += 1
 
@@ -105,14 +100,14 @@ i = 0
 for r_p in r_percentages:
     print 'Processing r =', str(r_p) + '% ...'
     j = 0
-    for k_p in k_percentages:
-        print '    Processing k =', str(k_p) + '% ...'
+    for k in k_values:
+        print '    Processing k =', str(k) + ' ...'
         for keyword in keywords:
             # Send a dummy query
             db.queryDummy()
 
             l_random_r = float(r_p) / 100.0
-            l_limit_k = int(float(k_p) * cardinalities[keyword[0]] / 100.0)
+            l_limit_k = k
 
             t_start = time.time()
             l_coordinates_hybrid = db.GetCoordinateHybrid(tableName, keyword[0], l_random_r, l_limit_k)
@@ -122,43 +117,47 @@ for r_p in r_percentages:
 
             progress += 1
             print '[Total time]', time.time() - t0, \
-                '[Progress]', str(progress * 100 / (len(keywords) * len(k_percentages) * len(r_percentages))) + '%'
+                '[Progress]', str(progress * 100 / (len(keywords) * len(k_values) * len(r_percentages))) + '%'
         j += 1
     i += 1
 
 print times
 
-# 3. Plot the T-k curves of different keywords in one canvas per r value
+# 3. Plot the T-r curves of different keywords in one canvas per k value
 print 'Plotting images ...'
-for i in range(0, len(r_percentages), 1):
-    r = r_labels[i]
-    i_fileName_head = 'freq=' + str(frequency) + '_r=' + str(r)
-    # (1) Plot T-k curves of different keywords
-    i_fileName = i_fileName_head + '_t_k'
-    i_labels = keyword_labels
-    print 'i_labels:'
-    print i_labels
-    i_x = k_percentages
+for i in range(0, len(k_values), 1):
+    k = k_values[i]
+    i_fileName_head = 'k=' + str(k)
+    # (1) Plot T-r curves of different keywords
+    i_fileName = i_fileName_head + '_t_r'
+    i_x = r_percentages
+    i_labels = []
     i_curves = []
     print 'keywords:'
     for keyword in keywords:
+        if keyword[1] * 0.9 <= k:
+            continue
         print keyword[0]
-        i_curve = np.array(times[keyword[0]])[i, :]
+        i_labels.append(keyword[0] + ':' + str(keyword[1]))
+        i_curve = np.array(times[keyword[0]])[:, i]
         i_curves.append(i_curve)
-    i_x_label = 'Limit k(%)'
+    print i_curves
+    print 'i_labels:'
+    print i_labels
+    i_x_label = 'Random r(%)'
     i_y_label = 'Execution Time(s)'
-    i_title = 'r=' + str(r) + ' - T-k curves of different keywords'
+    i_title = 'k=' + str(k) + ' - T-r curves of different keywords'
     print 'Plotting', i_title
     plotCurves(i_fileName, i_labels, i_x, i_curves, i_x_label, i_y_label, i_title)
 
 end = time.time()
 print '================================================='
-print '  ' + database + '  Experiments - Time over (r, k) value '
+print '  ' + database + '  Experiments - Time over r value '
 print '- Hybrid approach'
 print '================================================='
 print 'table:', tableName
 print 'keywords:', keywords
-print 'k_percentage:', k_labels
+print 'k_values:', k_values
 print 'r_percentage:', r_labels
 print '-------------------------------------------------'
 print 'Finished!', end - start, 'seconds spent.'
