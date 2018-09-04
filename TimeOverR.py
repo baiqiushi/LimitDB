@@ -19,17 +19,16 @@ tableName = Conf.TABLE
 db = DatabaseFactory.getDatabase(database)
 
 # Choose keywords with different frequencies
-keywords = [KeywordsUtil.pickAllInFrequencyRange(106875, 106877)[0],  # rain
-            KeywordsUtil.pickAllInFrequencyRange(211000, 212000)[0],  # love
-            KeywordsUtil.pickAllInFrequencyRange(500000, 600000)[0],  # appli
-            KeywordsUtil.pickAllInFrequencyRange(990000, 1000000)[0],  # work
-            KeywordsUtil.pickAllInFrequencyRange(3000000, 4000000)[0]]  # job
+keywords = KeywordsUtil.pickNearestKeywordToFrequency(20000, 10)
+keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(30000, 10))
+keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(40000, 10))
+keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(50000, 10))
+
 print keywords
 # keywords = [('job', 495)]
 
-k_values = [5000, 10000]  # range(5000, 100000, 5000)
+k_values = [10000, 15000, 20000, 25000, 30000, 35000, 40000]  # range(5000, 100000, 5000)
 r_percentages = range(10, 110, 10)
-keyword_labels = map(lambda kw: kw[0] + ':' + str(kw[1]), keywords)
 r_labels = map(lambda rp: str(rp) + '%', r_percentages)
 
 
@@ -127,16 +126,20 @@ for i in range(0, len(k_values), 1):
     i_fileName_head = 'k=' + str(k)
     # (1) Plot T-r curves of different keywords
     i_fileName = i_fileName_head + '_t_r'
-    i_labels = keyword_labels
-    print 'i_labels:'
-    print i_labels
     i_x = r_percentages
+    i_labels = []
     i_curves = []
     print 'keywords:'
     for keyword in keywords:
+        if keyword[1] * 0.9 <= k:
+            continue
         print keyword[0]
+        i_labels.append(keyword[0] + ':' + str(keyword[1]))
         i_curve = np.array(times[keyword[0]])[:, i]
         i_curves.append(i_curve)
+    print i_curves
+    print 'i_labels:'
+    print i_labels
     i_x_label = 'Random r(%)'
     i_y_label = 'Execution Time(s)'
     i_title = 'k=' + str(k) + ' - T-r curves of different keywords'
