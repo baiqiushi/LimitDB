@@ -98,7 +98,7 @@ for r_p in r_percentages:
     print 'Processing r =', str(r_p) + '% ...'
     j = 0
     for k in k_values:
-        print '    Processing k =', str(k) + '% ...'
+        print '    Processing k =', str(k) + ' ...'
         for keyword in keywords:
             # Send a dummy query
             db.queryDummy()
