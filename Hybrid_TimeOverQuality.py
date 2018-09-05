@@ -21,12 +21,12 @@ db = DatabaseFactory.getDatabase(database)
 # From what frequency, choose keywords
 frequency = 50000
 # For each frequency, how many keywords we choose
-numOfKeywords = 5
+numOfKeywords = 20
 
 # Target Quality
 quality = 0.85
 
-keywords = [KeywordsUtil.pickAllInFrequencyRange(211000, 212000)[0]]  # KeywordsUtil.pickNearestKeywordToFrequency(frequency, numOfKeywords)
+keywords = KeywordsUtil.pickNearestKeywordToFrequency(frequency, numOfKeywords)
 print keywords
 # keywords = [('job', 495)]
 
@@ -69,6 +69,7 @@ for i_keyword in keywords:
 
 print rk_pairs
 
+db.restart()
 db.queryDummy()
 
 # 2. For each r value: (for one r value, there's only one k value respectively)
@@ -85,24 +86,17 @@ print times
 
 progress = 0
 t0 = time.time()
-for i in range(0, len(r_values), 1):
+for i in range(0, r_values, 1):
     r = r_values[i]
     print 'Processing r =', str(int(r * 100)) + '% ...'
     for keyword in keywords:
 
         i_rk_pairs = rk_pairs[keyword[0]]
-
-        # if no r in the (r, k) pairs of this keyword, skip
-        hit = False
-        for i_rk in i_rk_pairs:
-            if i_rk[0] == r:
-                hit = True
-                k = i_rk[1]
-        if not hit:
-            if str(r_values[i]) + '%' in r_labels:
-                r_labels.remove(str(r_values[i]) + '%')
-                print 'remove', str(r_values[i]) + '%', 'from r_labels'
-                print r_labels
+        k = i_rk_pairs[i][1]
+        # if k value for this r for this keyword,
+        # assign the time to be 0.0
+        if k < 0:
+            times[keyword[0]].append(0.0)
             continue
 
         # Send a dummy query

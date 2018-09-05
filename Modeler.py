@@ -58,9 +58,9 @@ def findKOfQuality(p_keyword, p_quality, p_r, p_totalCoordinates):
 # meet the target quality requirement.
 # p_keyword - keyword
 # p_quality - target quality value, float in [0, 1]
-# p_rs - array of possible r values, [r0, r1, r2, ..., r10], ri is float in [0, 1]
+# p_rs - array of possible r values, [r0, r1, r2, ..., rx], ri is float in [0, 1]
 # return [[r0, k0], [r1, k1], ..., [rx, kx]] a list of [r, k] pairs that can satisfy this
-#        p_quality requirement
+#        p_quality requirement, if any k value for ri value, the ki will be -1
 def findKROfQuality(p_keyword, p_quality, p_rs):
 
     # 1. Get perfect image which can be reused for each call of findKOfQuality()
@@ -70,7 +70,6 @@ def findKROfQuality(p_keyword, p_quality, p_rs):
 
     for r in p_rs:
         k = findKOfQuality(p_keyword, p_quality, r, totalCoordinates)
-        if k[0] > 0:
-            result.append([r, k[0]])
+        result.append([r, k[0]])
 
     return result
