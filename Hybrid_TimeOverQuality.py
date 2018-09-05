@@ -86,7 +86,7 @@ print times
 
 progress = 0
 t0 = time.time()
-for i in range(0, r_values, 1):
+for i in range(0, len(r_values), 1):
     r = r_values[i]
     print 'Processing r =', str(int(r * 100)) + '% ...'
     for keyword in keywords:
