@@ -26,7 +26,7 @@ numOfKeywords = 5
 # Target Quality
 quality = 0.85
 
-keywords = KeywordsUtil.pickNearestKeywordToFrequency(frequency, numOfKeywords)
+keywords = [KeywordsUtil.pickAllInFrequencyRange(211000, 212000)[0]]  # KeywordsUtil.pickNearestKeywordToFrequency(frequency, numOfKeywords)
 print keywords
 # keywords = [('job', 495)]
 
