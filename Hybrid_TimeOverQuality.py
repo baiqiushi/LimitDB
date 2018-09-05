@@ -100,7 +100,10 @@ for i in range(0, r_values, 1):
             continue
 
         # Send a dummy query
+        t1 = time.time()
         db.queryDummy()
+        t2 = time.time()
+        print 'dummy query takes', t2 - t1, 's'
 
         t_start = time.time()
         l_coordinates_hybrid = db.GetCoordinateHybrid(tableName, keyword[0], r, k)
