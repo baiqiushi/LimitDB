@@ -19,9 +19,9 @@ tableName = Conf.TABLE
 db = DatabaseFactory.getDatabase(database)
 
 # From what frequency, choose keywords
-frequency = 50000
+frequency = 2800494
 # For each frequency, how many keywords we choose
-numOfKeywords = 20
+numOfKeywords = 1
 
 # Target Quality
 quality = 0.85
@@ -30,7 +30,7 @@ keywords = KeywordsUtil.pickNearestKeywordToFrequency(frequency, numOfKeywords)
 print keywords
 # keywords = [('job', 495)]
 
-r_percentages = range(50, 110, 10)
+r_percentages = range(10, 110, 10)
 r_values = map(lambda rp: float(rp) / 100.0, r_percentages)
 r_labels = map(lambda rp: str(rp) + '%', r_percentages)
 keyword_labels = map(lambda kw: kw[0] + ':' + str(kw[1]), keywords)
