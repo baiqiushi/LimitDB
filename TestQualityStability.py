@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 ###########################################################
 #   Configurations
 ###########################################################
-database = Conf.DATABASE
+database = Conf.DBTYPE
 tableName = Conf.TABLE
 
 db = DatabaseFactory.getDatabase(database)

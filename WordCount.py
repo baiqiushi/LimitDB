@@ -9,7 +9,7 @@ from nltk.corpus import stopwords
 
 nltk.download('stopwords')
 
-database = Conf.DATABASE
+database = Conf.DBTYPE
 tableName = Conf.TABLE
 
 # Keywords frequency range

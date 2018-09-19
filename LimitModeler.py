@@ -6,7 +6,7 @@ import DatabaseFactory
 import KeywordsUtil
 
 # Common config
-database = Conf.DATABASE
+database = Conf.DBTYPE
 tableName = Conf.TABLE
 
 # Config for this experiment

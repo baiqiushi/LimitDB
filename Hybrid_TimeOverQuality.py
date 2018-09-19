@@ -10,14 +10,16 @@ import KeywordsUtil
 import Modeler
 import PlotUtil
 import numpy as np
+import json
 
 ###########################################################
 #   Configurations
 ###########################################################
-database = Conf.DATABASE
+dbType = Conf.DBTYPE
+databaseName = Conf.DATABASE
 tableName = Conf.TABLE
 
-db = DatabaseFactory.getDatabase(database)
+db = DatabaseFactory.getDatabase(dbType)
 
 # From what frequency, choose keywords
 frequencies = [5554384]
@@ -44,7 +46,7 @@ keyword_labels = map(lambda kw: kw[0] + ':' + str(kw[1]), keywords)
 #  Run Script
 ###########################################################
 print '================================================='
-print '  ' + database + '  Experiment - Time over quality '
+print '  ' + dbType + '  Experiment - Time over quality '
 print '- Hybrid approach'
 print '================================================='
 print 'table:', tableName
@@ -53,28 +55,37 @@ print 'r_percentage:', r_labels
 print '-------------------------------------------------'
 start = time.time()
 
-# 1. Collect (r, k) pairs for each keyword
-# For each keyword:
-#   run Modeler.findKROfQuality() to get a list of (r, k) pairs
-
 # rk_pairs Dictionary stores for each keyword a list of list:
 # {'soccer': [[r=R0,k=K0], [r=R1,k=K1], ..., [r=Rn,k=Kn]], 'rain': [[...]]}
+
+# load rk_pairs dictionary from json file first
+rk_pairs_file = dbType + '_' + databaseName + '_' + tableName + '_rk_pairs.json'
 rk_pairs = {}
+with open(rk_pairs_file) as f:
+    rk_pairs = json.load(f)
+
+# 1. Collect (r, k) pairs for each keyword that not in current dictionary
+# For each keyword:
+#   run Modeler.findKROfQuality() to get a list of (r, k) pairs
 
 progress = 0
 t0 = time.time()
 for i_keyword in keywords:
     print 'Processing keyword =', i_keyword[0] + ' ...'
-    i_rk_pairs = Modeler.findKROfQuality(i_keyword[0], quality, r_values)
-    rk_pairs[i_keyword[0]] = i_rk_pairs
+    if i_keyword[0] in rk_pairs.keys():
+        print 'already exists in dictionary rk_pairs:', rk_pairs[i_keyword[0]]
+    else:
+        i_rk_pairs = Modeler.findKROfQuality(i_keyword[0], quality, r_values)
+        rk_pairs[i_keyword[0]] = i_rk_pairs
     progress += 1
     print '[Total time]', time.time() - t0, \
         '[Progress]', str(progress * 100 / len(keywords)) + '%'
 
 print rk_pairs
 
-db.restart()
-db.queryDummy()
+# Save rk_pairs dictionary into json file
+with open(rk_pairs_file, 'w') as f:
+    json.dump(rk_pairs, f)
 
 # 2. For each r value: (for one r value, there's only one k value respectively)
 #      For each keyword, run hybrid query:
@@ -91,7 +102,7 @@ print times
 progress = 0
 t0 = time.time()
 # run the queries in reversed order
-for i in range(len(r_values), 0, -1):
+for i in range(len(r_values) - 1, -1, -1):
 
     # Restart DB
     db.restart()
@@ -149,7 +160,7 @@ PlotUtil.plotCurves(i_fileName, i_labels, i_x, i_curves, i_x_label, i_y_label, i
 
 end = time.time()
 print '================================================='
-print '  ' + database + '  Experiment - Time over quality '
+print '  ' + dbType + '  Experiment - Time over quality '
 print '- Hybrid approach'
 print '================================================='
 print 'table:', tableName

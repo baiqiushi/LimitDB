@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 ###########################################################
 #   Configurations
 ###########################################################
-database = Conf.DATABASE
+database = Conf.DBTYPE
 tableName = Conf.TABLE
 
 # Keywords frequency range

@@ -4,7 +4,8 @@
 
 # Common config
 # Options: MySQL AsterixDB PostgreSQL
-DATABASE = 'PostgreSQL'
+DBTYPE = 'PostgreSQL'
+DATABASE = 'limitdb2'
 TABLE = 'coord_tweets'
 ORDER_BY = 'id'
 
@@ -20,7 +21,7 @@ MYSQL_CONFIG = {
   'user': 'root',
   'password': 'Root3979!',
   'host': 'localhost',
-  'database': 'limitdb',
+  'database': DATABASE,
   'raise_on_warnings': True,
   'use_pure': False,
 }
@@ -33,7 +34,7 @@ POSTGRESQL_CONFIG = {
     'host': 'localhost',
     'user': 'postgres',
     'password': 'postgres',
-    'database': 'limitdb2'
+    'database': DATABASE
 }
 
 # For 10 M data set

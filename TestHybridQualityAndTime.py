@@ -14,7 +14,7 @@ import numpy as np
 ###########################################################
 #   Configurations
 ###########################################################
-database = Conf.DATABASE
+database = Conf.DBTYPE
 tableName = Conf.TABLE
 
 db = DatabaseFactory.getDatabase(database)

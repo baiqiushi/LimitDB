@@ -6,7 +6,7 @@ from sets import Set
 
 
 # Common config
-database = Conf.DATABASE
+database = Conf.DBTYPE
 tableName = Conf.TABLE
 keywords = ['job', 'water', 'soccer']
 

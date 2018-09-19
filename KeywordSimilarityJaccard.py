@@ -6,7 +6,7 @@ import KeywordsUtil
 import QualityUtil
 
 
-database = Conf.DATABASE
+database = Conf.DBTYPE
 tableName = Conf.TABLE
 
 

@@ -6,7 +6,7 @@ import KeywordsUtil
 import Conf
 
 # Common config
-database = Conf.DATABASE
+database = Conf.DBTYPE
 tableName = Conf.TABLE
 orderBy = Conf.ORDER_BY
 

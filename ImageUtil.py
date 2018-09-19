@@ -69,7 +69,7 @@ def GetSimilarityFromImages(p1, p2):
 
 
 def testDrawHeat(p_keyword):
-    db = DatabaseFactory.getDatabase(Conf.DATABASE)
+    db = DatabaseFactory.getDatabase(Conf.DBTYPE)
     totalCoordinates = np.array(db.GetCoordinate(Conf.TABLE, p_keyword, -1))
     if len(totalCoordinates) == 0:
         return

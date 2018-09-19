@@ -2,7 +2,7 @@ import Conf
 import random
 import DatabaseFactory
 
-database = Conf.DATABASE
+database = Conf.DBTYPE
 db = DatabaseFactory.getDatabase(database)
 
 
