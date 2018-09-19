@@ -89,7 +89,8 @@ print times
 
 progress = 0
 t0 = time.time()
-for i in range(0, len(r_values), 1):
+# run the queries in reversed order
+for i in range(len(r_values), 0, -1):
 
     # Restart DB
     db.restart()
@@ -126,10 +127,10 @@ print times
 
 # 3. Plot the T-(r, k) curves of different keywords in one canvas
 print 'Plotting images ...'
-i_fileName_head = 'freq=[' + str(min(frequencies)) + '-' + str(max(frequencies)) + ']_q=' + str(quality)
+i_fileName_head = 'hybrid_freq-' + str(min(frequencies)) + '-' + str(max(frequencies)) + '_q-' + str(quality)
 
 # (1) Plot T-(r, k) curves of different keywords
-i_fileName = i_fileName_head + '_t_(r-k)'
+i_fileName = i_fileName_head + '_t-r-k'
 i_labels = keyword_labels
 print 'i_labels:'
 print i_labels
