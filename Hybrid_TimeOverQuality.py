@@ -19,14 +19,17 @@ tableName = Conf.TABLE
 db = DatabaseFactory.getDatabase(database)
 
 # From what frequency, choose keywords
-frequency = 2800494
+frequencies = [5554384]
 # For each frequency, how many keywords we choose
 numOfKeywords = 1
 
 # Target Quality
 quality = 0.85
 
-keywords = KeywordsUtil.pickNearestKeywordToFrequency(frequency, numOfKeywords)
+# Choose keywords with different frequencies
+keywords = []
+for freq in frequencies:
+    keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(freq, numOfKeywords))
 print keywords
 # keywords = [('job', 495)]
 
@@ -123,7 +126,7 @@ print times
 
 # 3. Plot the T-(r, k) curves of different keywords in one canvas
 print 'Plotting images ...'
-i_fileName_head = 'freq=' + str(frequency) + '_q=' + str(quality)
+i_fileName_head = 'freq=[' + str(min(frequencies)) + '-' + str(max(frequencies)) + ']_q=' + str(quality)
 
 # (1) Plot T-(r, k) curves of different keywords
 i_fileName = i_fileName_head + '_t_(r-k)'
@@ -138,7 +141,7 @@ for keyword in keywords:
     i_curves.append(times[keyword[0]])
 i_x_label = '(r, k) pair for r'
 i_y_label = 'Execution Time(s)'
-i_title = 'Frequency=' + str(frequency) + ' Quality=' + str(quality) + ' - T-(r,k) curves of different keywords'
+i_title = 'Frequency=[' + str(min(frequencies)) + '-' + str(max(frequencies)) + '] Quality=' + str(quality) + ' - T-(r,k) curves of different keywords'
 print 'Plotting', i_title
 PlotUtil.plotCurves(i_fileName, i_labels, i_x, i_curves, i_x_label, i_y_label, i_title)
 
