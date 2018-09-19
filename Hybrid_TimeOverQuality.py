@@ -9,6 +9,7 @@ import DatabaseFactory
 import KeywordsUtil
 import Modeler
 import PlotUtil
+import numpy as np
 
 ###########################################################
 #   Configurations
@@ -102,9 +103,9 @@ for i in range(len(r_values), 0, -1):
         i_rk_pairs = rk_pairs[keyword[0]]
         k = i_rk_pairs[i][1]
         # if k value for this r for this keyword,
-        # assign the time to be 0.0
+        # assign the time to be NaN
         if k < 0:
-            times[keyword[0]].append(0.0)
+            times[keyword[0]].append(np.nan)
             continue
 
         # Send a dummy query
@@ -142,7 +143,7 @@ for keyword in keywords:
     i_curves.append(times[keyword[0]])
 i_x_label = '(r, k) pair for r'
 i_y_label = 'Execution Time(s)'
-i_title = 'Frequency=[' + str(min(frequencies)) + '-' + str(max(frequencies)) + '] Quality=' + str(quality) + ' - T-(r,k) curves of different keywords'
+i_title = 'F=[' + str(min(frequencies)) + '-' + str(max(frequencies)) + '] Q=' + str(quality) + ' - T-(r,k) curves'
 print 'Plotting', i_title
 PlotUtil.plotCurves(i_fileName, i_labels, i_x, i_curves, i_x_label, i_y_label, i_title)
 
