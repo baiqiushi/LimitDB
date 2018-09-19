@@ -105,7 +105,8 @@ print times
 progress = 0
 t0 = time.time()
 # run the queries in reversed order
-for i in range(len(r_values) - 1, -1, -1):
+# for i in range(len(r_values) - 1, -1, -1):
+for i in range(0, len(r_values), 1):
 
     # Restart DB
     db.restart()
