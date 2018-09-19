@@ -99,7 +99,7 @@ with open(rk_pairs_file, 'w+') as f:
 # {'soccer': [t(r=R0), t(r=R1), ...], 'rain': [...]}
 times = {}
 for keyword in keywords:
-    times[keyword[0]] = []
+    times[keyword[0]] = [np.nan] * len(r_values)
 print times
 
 progress = 0
@@ -119,7 +119,7 @@ for i in range(len(r_values) - 1, -1, -1):
         # if k value for this r for this keyword,
         # assign the time to be NaN
         if k < 0:
-            times[keyword[0]].append(np.nan)
+            times[keyword[0]][i] = np.nan
             continue
 
         # Send a dummy query
@@ -132,7 +132,7 @@ for i in range(len(r_values) - 1, -1, -1):
         l_coordinates_hybrid = db.GetCoordinateHybrid(tableName, keyword[0], r, k)
         t_end = time.time()
 
-        times[keyword[0]].append(t_end - t_start)
+        times[keyword[0]][i] = t_end - t_start
 
         progress += 1
         print '[Total time]', time.time() - t0, \
