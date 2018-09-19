@@ -61,8 +61,11 @@ start = time.time()
 # load rk_pairs dictionary from json file first
 rk_pairs_file = dbType + '_' + databaseName + '_' + tableName + '_rk_pairs.json'
 rk_pairs = {}
-with open(rk_pairs_file) as f:
-    rk_pairs = json.load(f)
+try:
+    with open(rk_pairs_file) as f:
+        rk_pairs = json.load(f)
+except IOError:
+    print rk_pairs_file, ' does not exist.'
 
 # 1. Collect (r, k) pairs for each keyword that not in current dictionary
 # For each keyword:
@@ -84,7 +87,7 @@ for i_keyword in keywords:
 print rk_pairs
 
 # Save rk_pairs dictionary into json file
-with open(rk_pairs_file, 'w') as f:
+with open(rk_pairs_file, 'w+') as f:
     json.dump(rk_pairs, f)
 
 # 2. For each r value: (for one r value, there's only one k value respectively)
