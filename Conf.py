@@ -33,11 +33,18 @@ POSTGRESQL_CONFIG = {
     'host': 'localhost',
     'user': 'postgres',
     'password': 'postgres',
-    'database': 'limitdb'
+    'database': 'limitdb2'
 }
 
-# POSTGRESQL_DUMMY_SQL = 'select count(1) from ' \
+# For 10 M data set
+# POSTGRESQL_DUMMY_SQL = 'Select count(1) from ' \
 #                        '(select t.text from dummy_table t where t.id < 865350497200371700) p ' \
 #                        'where p.text like \'%lo%\' '
 
-POSTGRESQL_DUMMY_SQL = 'select * from dummy_table'
+# POSTGRESQL_DUMMY_SQL = 'select * from dummy_table'
+
+# For 200 M data set
+POSTGRESQL_DUMMY_SQL = 'Select count(1) from ' \
+                       '(select t.text from dummy_table t where t.id < 799999999999999999) p ' \
+                       'where p.text like \'%lo%\' '
+
