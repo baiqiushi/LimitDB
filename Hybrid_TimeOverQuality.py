@@ -141,13 +141,13 @@ for i in range(0, len(r_values), 1):
 
 print times
 # Save times into json file
-times_file = 'hybrid_freq-' + str(min(frequencies)) + '-' + str(max(frequencies)) + '_q-' + str(quality) + '_times.json'
+times_file = 'hybrid_' + tableName + '_freq-' + str(min(frequencies)) + '-' + str(max(frequencies)) + '_q-' + str(quality) + '_times.json'
 with open(times_file, 'w+') as f:
     json.dump(times, f)
 
 # 3. Plot the T-(r, k) curves of different keywords in one canvas
 print 'Plotting images ...'
-i_fileName_head = 'hybrid_freq-' + str(min(frequencies)) + '-' + str(max(frequencies)) + '_q-' + str(quality)
+i_fileName_head = 'hybrid_' + tableName + '_freq-' + str(min(frequencies)) + '-' + str(max(frequencies)) + '_q-' + str(quality)
 
 # (1) Plot T-(r, k) curves of different keywords
 i_fileName = i_fileName_head + '_t-r-k'
