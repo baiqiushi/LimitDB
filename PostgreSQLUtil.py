@@ -3,6 +3,8 @@ import os
 import sys
 import Conf
 import time
+from random import choice
+from string import ascii_lowercase
 
 
 class PostgreSQLUtil:
@@ -109,7 +111,9 @@ class PostgreSQLUtil:
             raise psycopg2.DatabaseError
 
     def queryDummy(self):
-        dummy_sql = Conf.POSTGRESQL_DUMMY_SQL
+        # Generate a random 2 character string
+        like_base = ''.join(choice(ascii_lowercase) for i in range(2))
+        dummy_sql = Conf.POSTGRESQL_DUMMY_SQL_TEMP + '\'%' + like_base + '%\''
         return self.query(dummy_sql)
 
     def queryLimitWordInCountOrderBy(self, p_min_count, p_max_count, p_limit, p_orderBy):
