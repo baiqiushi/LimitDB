@@ -116,6 +116,9 @@ class PostgreSQLUtil:
         dummy_sql = Conf.POSTGRESQL_DUMMY_SQL_TEMP + '\'%' + like_base + '%\''
         return self.query(dummy_sql)
 
+    def queryWarmUp(self, tableName):
+        return self.queryLimit(tableName, '0.00', -1)
+
     def queryLimitWordInCountOrderBy(self, p_min_count, p_max_count, p_limit, p_orderBy):
         if p_orderBy == 'random':
             p_orderBy = 'random()'
