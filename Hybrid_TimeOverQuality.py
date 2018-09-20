@@ -36,9 +36,7 @@ keywords = []
 for freq in frequencies:
     keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(freq, numOfKeywords))
 # Remove keywords with non alphabetic symbols
-for kw in keywords:
-    if not kw[0].isalpha():
-        keywords.remove(kw)
+keywords[:] = [kw for kw in keywords if kw[0].isalpha()]
 print keywords
 # keywords = [('job', 495)]
 
