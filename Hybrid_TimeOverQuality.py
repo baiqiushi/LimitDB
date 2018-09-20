@@ -156,6 +156,7 @@ if not draw_curves_directly:
             t_start = time.time()
             l_coordinates_hybrid = db.GetCoordinateHybrid(tableName, keyword[0], r, k)
             t_end = time.time()
+            print 'This query takes', t_end - t_start, 's'
 
             times[keyword[0]][i] = t_end - t_start
 
