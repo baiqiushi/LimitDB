@@ -140,6 +140,10 @@ for i in range(0, len(r_values), 1):
             '[Progress]', str(progress * 100 / (len(keywords) * len(r_values))) + '%'
 
 print times
+# Save times into json file
+times_file = 'hybrid_freq-' + str(min(frequencies)) + '-' + str(max(frequencies)) + '_q-' + str(quality) + '_times.json'
+with open(times_file, 'w+') as f:
+    json.dump(times, f)
 
 # 3. Plot the T-(r, k) curves of different keywords in one canvas
 print 'Plotting images ...'
