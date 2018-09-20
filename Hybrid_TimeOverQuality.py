@@ -29,10 +29,16 @@ numOfKeywords = 1
 # Target Quality
 quality = 0.85
 
+reversed_order = False
+
 # Choose keywords with different frequencies
 keywords = []
 for freq in frequencies:
     keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(freq, numOfKeywords))
+# Remove keywords with non alphabetic symbols
+for kw in keywords:
+    if not kw[0].isalpha():
+        keywords.remove(kw)
 print keywords
 # keywords = [('job', 495)]
 
@@ -97,53 +103,73 @@ with open(rk_pairs_file, 'w+') as f:
 
 # Time Dictionary stores for each keyword a list of Time
 # {'soccer': [t(r=R0), t(r=R1), ...], 'rain': [...]}
-times = {}
-for keyword in keywords:
-    times[keyword[0]] = [np.nan] * len(r_values)
-print times
 
-progress = 0
-t0 = time.time()
-# run the queries in reversed order
-# for i in range(len(r_values) - 1, -1, -1):
-for i in range(0, len(r_values), 1):
-
-    # Restart DB
-    db.restart()
-
-    r = r_values[i]
-    print 'Processing r =', str(int(r * 100)) + '% ...'
-    for keyword in keywords:
-
-        i_rk_pairs = rk_pairs[keyword[0]]
-        k = i_rk_pairs[i][1]
-        # if k value for this r for this keyword,
-        # assign the time to be NaN
-        if k < 0:
-            times[keyword[0]][i] = np.nan
-            continue
-
-        # Send a dummy query
-        t1 = time.time()
-        db.queryDummy()
-        t2 = time.time()
-        print 'dummy query takes', t2 - t1, 's'
-
-        t_start = time.time()
-        l_coordinates_hybrid = db.GetCoordinateHybrid(tableName, keyword[0], r, k)
-        t_end = time.time()
-
-        times[keyword[0]][i] = t_end - t_start
-
-        progress += 1
-        print '[Total time]', time.time() - t0, \
-            '[Progress]', str(progress * 100 / (len(keywords) * len(r_values))) + '%'
-
-print times
-# Save times into json file
+# load times dictionary from json file first
 times_file = 'hybrid_' + tableName + '_freq-' + str(min(frequencies)) + '-' + str(max(frequencies)) + '_q-' + str(quality) + '_times.json'
-with open(times_file, 'w+') as f:
-    json.dump(times, f)
+times = {}
+draw_curves_directly = False
+try:
+    with open(times_file) as f:
+        times = json.load(f)
+        draw_curves_directly = True
+except IOError:
+    print times_file, ' does not exist.'
+    # if json file does not exist, new an empty dictionary
+    for keyword in keywords:
+        times[keyword[0]] = [np.nan] * len(r_values)
+print times
+
+if not draw_curves_directly:
+    progress = 0
+    t0 = time.time()
+
+    i_start = 0
+    i_end = len(r_values)
+    i_step = 1
+    # run the queries in reversed order
+    if reversed_order:
+        i_start = len(r_values) - 1
+        i_end = -1
+        i_step = -1
+
+    for i in range(i_start, i_end, i_step):
+
+        # Restart DB
+        db.restart()
+
+        r = r_values[i]
+        print 'Processing r =', str(int(r * 100)) + '% ...'
+        for keyword in keywords:
+
+            i_rk_pairs = rk_pairs[keyword[0]]
+            k = i_rk_pairs[i][1]
+            # if k value for this r for this keyword,
+            # assign the time to be NaN
+            if k < 0:
+                times[keyword[0]][i] = np.nan
+                continue
+
+            # Send a dummy query
+            t1 = time.time()
+            db.queryDummy()
+            t2 = time.time()
+            print 'dummy query takes', t2 - t1, 's'
+
+            t_start = time.time()
+            l_coordinates_hybrid = db.GetCoordinateHybrid(tableName, keyword[0], r, k)
+            t_end = time.time()
+
+            times[keyword[0]][i] = t_end - t_start
+
+            progress += 1
+            print '[Total time]', time.time() - t0, \
+                '[Progress]', str(progress * 100 / (len(keywords) * len(r_values))) + '%'
+
+    print times
+    # Save times into json file
+
+    with open(times_file, 'w+') as f:
+        json.dump(times, f)
 
 # 3. Plot the T-(r, k) curves of different keywords in one canvas
 print 'Plotting images ...'
