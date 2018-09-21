@@ -22,14 +22,14 @@ tableName = Conf.TABLE
 db = DatabaseFactory.getDatabase(dbType)
 
 # From what frequency, choose keywords
-frequencies = [5554384]
+frequencies = [2186155]
 # For each frequency, how many keywords we choose
 numOfKeywords = 1
 
 # Target Quality
 quality = 0.85
 
-reversed_order = False
+reversed_order = True
 
 # Choose keywords with different frequencies
 keywords = []
