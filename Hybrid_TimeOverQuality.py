@@ -132,9 +132,6 @@ if not draw_curves_directly:
 
     for i in range(i_start, i_end, i_step):
 
-        # Restart DB
-        db.restart()
-
         r = r_values[i]
         print 'Processing r =', str(int(r * 100)) + '% ...'
         for keyword in keywords:
@@ -169,6 +166,9 @@ if not draw_curves_directly:
             progress += 1
             print '[Total time]', time.time() - t0, \
                 '[Progress]', str(progress * 100 / (len(keywords) * len(r_values))) + '%'
+
+            # Restart DB
+            db.restart()
 
     print times
     # Save times into json file
