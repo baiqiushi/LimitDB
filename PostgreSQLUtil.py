@@ -56,6 +56,15 @@ class PostgreSQLUtil:
             sql += " limit " + str(limit)
         return self.query(sql)
 
+    def SumCoordinateHybrid(self, tableName, keyword, ratio, limit):
+        sql = "select sum(x), sum(y) from " + tableName + \
+              " where to_tsvector('english',text)@@to_tsquery('english','" + keyword + "')"
+        if ratio >= 0:
+            sql += " and random() <= " + str(ratio)
+        if limit >= 0:
+            sql += " limit " + str(limit)
+        return self.query(sql)
+
     def GetID(self, tableName, keyword, limit):
         sql = "select id from " + tableName + \
               " where to_tsvector('english',text)@@to_tsquery('english','" + keyword + "')"

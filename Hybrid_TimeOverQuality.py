@@ -151,13 +151,14 @@ if not draw_curves_directly:
             print 'dummy query takes', t2 - t1, 's'
 
             # Send a warm up query
-            # t1 = time.time()
-            # db.queryWarmUp(tableName, keyword[0])
-            # t2 = time.time()
-            # print 'warm up query takes', t2 - t1, 's'
+            t1 = time.time()
+            db.queryWarmUp(tableName, keyword[0])
+            t2 = time.time()
+            print 'warm up query takes', t2 - t1, 's'
 
             t_start = time.time()
-            l_coordinates_hybrid = db.GetCoordinateHybrid(tableName, keyword[0], r, k)
+            # l_coordinates_hybrid = db.GetCoordinateHybrid(tableName, keyword[0], r, k)
+            l_coordinates_hybrid = db.SumCoordinateHybrid(tableName, keyword[0], r, k)
             t_end = time.time()
             print 'This query takes', t_end - t_start, 's'
 
