@@ -22,9 +22,9 @@ tableName = Conf.TABLE
 db = DatabaseFactory.getDatabase(dbType)
 
 # From what frequency, choose keywords
-frequencies = [5554384]
+# frequencies = [1090320]
 # For each frequency, how many keywords we choose
-numOfKeywords = 1
+# numOfKeywords = 1
 
 # Target Quality
 quality = 0.85
@@ -32,18 +32,22 @@ quality = 0.85
 reversed_order = False
 
 # Choose keywords with different frequencies
-keywords = []
-for freq in frequencies:
-    keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(freq, numOfKeywords))
-# Remove keywords with non alphabetic symbols
-keywords[:] = [kw for kw in keywords if kw[0].isalpha()]
-print keywords
-# keywords = [('job', 495)]
+# keywords = []
+# for freq in frequencies:
+#     keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(freq, numOfKeywords))
+# # Remove keywords with non alphabetic symbols
+# keywords[:] = [kw for kw in keywords if kw[0].isalpha()]
+# print keywords
+keywords = [('girl', 1090320)]
 
 r_percentages = range(10, 110, 10)
 r_values = map(lambda rp: float(rp) / 100.0, r_percentages)
 r_labels = map(lambda rp: str(rp) + '%', r_percentages)
 keyword_labels = map(lambda kw: kw[0] + ':' + str(kw[1]), keywords)
+
+# For fill cache
+fillCacheTableName = 'coord_tweets' if tableName == 'coord_tweets_sorted' else 'coord_tweets_sorted'
+fillCacheKeywords = KeywordsUtil.randomPickInFrequencyRange(3000000, 8000000, 8)
 
 
 ###########################################################
@@ -103,7 +107,8 @@ with open(rk_pairs_file, 'w+') as f:
 # {'soccer': [t(r=R0), t(r=R1), ...], 'rain': [...]}
 
 # load times dictionary from json file first
-times_file = 'hybrid_' + tableName + '_freq-' + str(min(frequencies)) + '-' + str(max(frequencies)) + '_q-' + str(quality) + '_times.json'
+# times_file = 'hybrid_' + tableName + '_freq-' + str(min(frequencies)) + '-' + str(max(frequencies)) + '_q-' + str(quality) + '_times.json'
+times_file = 'hybrid_' + tableName + '_' + keywords[0][0] + '_q-' + str(quality) + '_times.json'
 times = {}
 draw_curves_directly = False
 try:
@@ -144,17 +149,19 @@ if not draw_curves_directly:
                 times[keyword[0]][i] = np.nan
                 continue
 
-            # Send a dummy query
-            t1 = time.time()
-            db.queryDummy()
-            t2 = time.time()
-            print 'dummy query takes', t2 - t1, 's'
+            # Send dummy query and fill cache queries
+            for fillCacheKW in fillCacheKeywords:
+                # Send a dummy query
+                t1 = time.time()
+                db.queryDummy()
+                t2 = time.time()
+                print 'dummy query takes', t2 - t1, 's'
 
-            # Send a warm up query
-            # t1 = time.time()
-            # db.queryWarmUp(tableName, keyword[0])
-            # t2 = time.time()
-            # print 'warm up query takes', t2 - t1, 's'
+                # Send a fill Cache query
+                t1 = time.time()
+                db.SumCoordinateHybrid(fillCacheTableName, fillCacheKW[0], 1.0, fillCacheKW[1])
+                t2 = time.time()
+                print 'fill cache query takes', t2 - t1, 's'
 
             t_start = time.time()
             # l_coordinates_hybrid = db.GetCoordinateHybrid(tableName, keyword[0], r, k)
@@ -179,7 +186,8 @@ if not draw_curves_directly:
 
 # 3. Plot the T-(r, k) curves of different keywords in one canvas
 print 'Plotting images ...'
-i_fileName_head = 'hybrid_' + tableName + '_freq-' + str(min(frequencies)) + '-' + str(max(frequencies)) + '_q-' + str(quality)
+# i_fileName_head = 'hybrid_' + tableName + '_freq-' + str(min(frequencies)) + '-' + str(max(frequencies)) + '_q-' + str(quality)
+i_fileName_head = 'hybrid_' + tableName + '_' + keywords[0][0] + '_q-' + str(quality)
 
 # (1) Plot T-(r, k) curves of different keywords
 i_fileName = i_fileName_head + '_t-r-k'
@@ -194,7 +202,8 @@ for keyword in keywords:
     i_curves.append(times[keyword[0]])
 i_x_label = '(r, k) pair for r'
 i_y_label = 'Execution Time(s)'
-i_title = 'F=[' + str(min(frequencies)) + '-' + str(max(frequencies)) + '] Q=' + str(quality) + ' - T-(r,k) curves'
+# i_title = 'F=[' + str(min(frequencies)) + '-' + str(max(frequencies)) + '] Q=' + str(quality) + ' - T-(r,k) curves'
+i_title = 'F=[' + keywords[0][1] + '] Q=' + str(quality) + ' - T-(r,k) curves'
 print 'Plotting', i_title
 PlotUtil.plotCurves(i_fileName, i_labels, i_x, i_curves, i_x_label, i_y_label, i_title)
 
