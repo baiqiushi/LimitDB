@@ -207,7 +207,7 @@ for keyword in keywords:
 i_x_label = '(r, k) pair for r'
 i_y_label = 'Execution Time(s)'
 # i_title = 'F=[' + str(min(frequencies)) + '-' + str(max(frequencies)) + '] Q=' + str(quality) + ' - T-(r,k) curves'
-i_title = 'F=[' + keywords[0][1] + '] Q=' + str(quality) + ' - T-(r,k) curves'
+i_title = 'F=[' + str(keywords[0][1]) + '] Q=' + str(quality) + ' - T-(r,k) curves'
 print 'Plotting', i_title
 PlotUtil.plotCurves(i_fileName, i_labels, i_x, i_curves, i_x_label, i_y_label, i_title)
 
