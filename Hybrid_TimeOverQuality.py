@@ -31,6 +31,10 @@ quality = 0.85
 
 reversed_order = False
 
+order_suffix = 'asc'
+if reversed_order:
+    order_suffix = 'desc'
+
 # Choose keywords with different frequencies
 # keywords = []
 # for freq in frequencies:
@@ -108,7 +112,7 @@ with open(rk_pairs_file, 'w+') as f:
 
 # load times dictionary from json file first
 # times_file = 'hybrid_' + tableName + '_freq-' + str(min(frequencies)) + '-' + str(max(frequencies)) + '_q-' + str(quality) + '_times.json'
-times_file = 'hybrid_' + tableName + '_' + keywords[0][0] + '_q-' + str(quality) + '_times.json'
+times_file = 'hybrid_' + tableName + '_' + keywords[0][0] + '_q-' + str(quality) + '_times_' + order_suffix + '.json'
 times = {}
 draw_curves_directly = False
 try:
@@ -190,7 +194,7 @@ print 'Plotting images ...'
 i_fileName_head = 'hybrid_' + tableName + '_' + keywords[0][0] + '_q-' + str(quality)
 
 # (1) Plot T-(r, k) curves of different keywords
-i_fileName = i_fileName_head + '_t-r-k'
+i_fileName = i_fileName_head + '_t-r-k_' + order_suffix
 i_labels = keyword_labels
 print 'i_labels:'
 print i_labels
