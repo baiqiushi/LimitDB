@@ -22,9 +22,9 @@ tableName = Conf.TABLE
 db = DatabaseFactory.getDatabase(dbType)
 
 # From what frequency, choose keywords
-# frequencies = [1090320]
+frequencies = [100000, 500000, 1000000, 2000000, 3000000, 5000000, 8000000, 10000000, 12000000, 15000000, 20000000]
 # For each frequency, how many keywords we choose
-# numOfKeywords = 1
+numOfKeywords = 3
 
 # Target Quality
 quality = 0.85
@@ -36,13 +36,13 @@ if reversed_order:
     order_suffix = 'desc'
 
 # Choose keywords with different frequencies
-# keywords = []
-# for freq in frequencies:
-#     keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(freq, numOfKeywords))
-# # Remove keywords with non alphabetic symbols
-# keywords[:] = [kw for kw in keywords if kw[0].isalpha()]
-# print keywords
-keywords = [('girl', 1090320)]
+keywords = []
+for freq in frequencies:
+    keywords.extend(KeywordsUtil.pickNearestKeywordToFrequency(freq, numOfKeywords))
+# Remove keywords with non alphabetic symbols
+keywords[:] = [kw for kw in keywords if kw[0].isalpha()]
+print keywords
+# keywords = [('girl', 1090320)]
 
 r_percentages = range(10, 110, 10)
 r_values = map(lambda rp: float(rp) / 100.0, r_percentages)
@@ -51,7 +51,7 @@ keyword_labels = map(lambda kw: kw[0] + ':' + str(kw[1]), keywords)
 
 # For fill cache
 fillCacheTableName = 'coord_tweets' if tableName == 'coord_tweets_sorted' else 'coord_tweets_sorted'
-fillCacheKeywords = KeywordsUtil.randomPickInFrequencyRange(3000000, 8000000, 8)
+fillCacheKeywords = KeywordsUtil.randomPickInFrequencyRange(3000000, 8000000, 3)
 
 
 ###########################################################
@@ -153,14 +153,13 @@ if not draw_curves_directly:
                 times[keyword[0]][i] = np.nan
                 continue
 
-            # Send dummy query and fill cache queries
-            for fillCacheKW in fillCacheKeywords:
-                # Send a dummy query
-                t1 = time.time()
-                db.queryDummy()
-                t2 = time.time()
-                print 'dummy query takes', t2 - t1, 's'
+            # Send a dummy query
+            t1 = time.time()
+            db.queryDummy()
+            t2 = time.time()
+            print 'dummy query takes', t2 - t1, 's'
 
+            for fillCacheKW in fillCacheKeywords:
                 # Send a fill Cache query
                 t1 = time.time()
                 db.SumCoordinateHybrid(fillCacheTableName, fillCacheKW[0], 1.0, fillCacheKW[1])
