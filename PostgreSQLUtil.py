@@ -8,8 +8,9 @@ from string import ascii_lowercase
 
 
 class PostgreSQLUtil:
-    def __init__(self):
+    def __init__(self, p_database):
         self.config = Conf.POSTGRESQL_CONFIG
+        self.config['database'] = p_database
         self.conn = 0
         self.cursor = 0
         self.open()
@@ -25,6 +26,17 @@ class PostgreSQLUtil:
         print '[PostgreSQLUtil]--> ', sql
         self.cursor.execute(sql)
         return self.cursor.fetchall()
+
+    def command(self, sql):
+        if self.conn is None:
+            self.conn = psycopg2.connect(**self.config)
+            self.cursor = self.conn.cursor()
+        print '[PostgreSQLUtil]--> ', sql
+        try:
+            self.cursor.execute(sql)
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+        return True
 
     def close(self):
         self.cursor.close()
@@ -191,6 +203,73 @@ class PostgreSQLUtil:
         results = map(lambda record: list(record), results)
         return results
 
+    # generate a sample of p_percentage for p_tableName
+    # sample table name: 'p_tableName_p_mode_p_percentage', e.g. coord_tweets_bernoulli_1
+    # return: sample table name, if successful, otherwise None
+    def generateSample(self, p_tableName, p_percentage, p_mode='bernoulli'):
+        l_sampleTableName = p_tableName + '_' + p_mode + '_' + p_percentage
+        l_sql = 'create table ' + l_sampleTableName + \
+                ' as select * from ' + p_tableName + \
+                ' tablesample ' + p_mode + '(' + str(p_percentage) + ')'
+        success = self.command(l_sql)
+        if success:
+            self.commit()
+            return l_sampleTableName
+        else:
+            return None
+
+    # build an inverted index on p_attribute for p_tableName
+    # index name: 'idx_p_tableName_p_attribute'
+    # return: index name, if successful, otherwise None
+    def buildInvertedIndex(self, p_tableName, p_attribute):
+        l_idxName = 'idx_' + p_tableName + '_' + p_attribute
+        l_sql = 'CREATE INDEX ' + l_idxName + \
+                'ON ' + p_tableName + \
+                ' USING GIN(to_tsvector(\'english\'::regconfig, ' + p_attribute + '))'
+        success = self.command(l_sql)
+        if success:
+            self.commit()
+            return l_idxName
+        else:
+            return None
+
+    # load the csv file to the table
+    def loadCSVToTable(self, p_file, p_tableName):
+        l_sql = 'copy ' + p_tableName + ' from \'' + p_file + '\' DELIMITER \',\' CSV'
+        success = self.command(l_sql)
+        if success:
+            self.commit()
+            return True
+        else:
+            return False
+
+    # query the curves of keywords in frequency range generated from p_table
+    def queryCurves(self, p_table, p_min_freq, p_max_freq):
+        l_sql = 'SELECT cv.word, q5, q10, q15, q20, ' \
+                '       q25, q30, q35, q40, q45, q50, q55,' \
+                '       q60, q65, q70, q75, q80, q85, q90, q95 ' \
+                '  FROM word_curves cv, word_counts cn' \
+                ' WHERE cv.word = cn.word' \
+                '   and cv.table_name = ' + p_table + \
+                '   and cn.frequency >= ' + str(p_min_freq) + \
+                '   and cn.frequency <= ' + str(p_max_freq) + \
+                ' ORDER BY cn.frequency DESC'
+        results = self.query(l_sql)
+        # convert the sub-tuples into lists
+        results = map(lambda record: list(record), results)
+        return results
+
+    # query the keywords in frequency range
+    def queryKeywords(self, p_min_freq, p_max_freq):
+        l_sql = 'SELECT word FROM word_counts ' \
+                ' WHERE frequency >= ' + str(p_min_freq) + \
+                '   and frequency < ' + str(p_max_freq) + \
+                ' ORDER BY frequency DESC'
+        results = self.query(l_sql)
+        # convert the sub-tuples into one element
+        results = map(lambda record: record[0], results)
+        return results
+
 
 def test():
     db = PostgreSQLUtil()
@@ -213,7 +292,8 @@ def test():
     # print result
     # result = db.queryLimitWordInCurveGroupOrderBy(0, 3, 'random')
     # print result
-    result = db.GetCount('coord_tweets', 'work')
+    # result = db.GetCount('coord_tweets', 'work')
+    result = db.loadCSVToTable('/Users/white/1m_random_postgres.csv', 'dummy_table')
     print result
 
 
