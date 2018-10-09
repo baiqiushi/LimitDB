@@ -117,7 +117,7 @@ POSTGRESQL_TABLE_COMMANDS = [
     # clean word_counts data
     {'key': 'clean_word_counts',
      'cmd': """
-            DELETE FROM word_counts where char_length(word) < 3 or word !~* '^[a-z]*$'
+            DELETE FROM word_counts where char_length(word) < 3 or word !~* '^[a-z]*$ or frequency < 1000'
             """,
      'comment': 'clean word_counts data'
      },
