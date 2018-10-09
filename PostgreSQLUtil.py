@@ -243,6 +243,22 @@ class PostgreSQLUtil:
         else:
             return False
 
+    # insert list into the table
+    def insertListToTable(self, p_list, p_tableName):
+        l_sql = '''INSERT INTO ''' + p_tableName + ''' VALUES({})'''.format(','.join('%s' for x in p_list))
+        print l_sql
+        if self.conn is None:
+            self.conn = psycopg2.connect(**self.config)
+            self.cursor = self.conn.cursor()
+        print '[PostgreSQLUtil]--> ', l_sql
+        try:
+            self.cursor.execute(l_sql, p_list)
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+        self.commit()
+        return True
+
     # query the curves of keywords in frequency range generated from p_table
     def queryCurves(self, p_table, p_min_freq, p_max_freq):
         l_sql = 'SELECT cv.word, q5, q10, q15, q20, ' \
