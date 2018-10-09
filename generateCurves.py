@@ -86,9 +86,9 @@ print '[Time] Curve generation:', t1 - t0
 
 # write curves to csv file
 csvFile = CurveGenerator.writeCurvesToCSV(tableName, curves, csvBasePath)
-print 'Write the curves to csv file:', csvFile
-# load curves into database table 'word_curves'
-print 'Load the curves into database table "word_curves":', CurveGenerator.loadCurvesCSVToDB(db, csvFile)
+print 'Append the curves to csv file:', csvFile
+# insert curves into database table 'word_curves'
+print 'Insert the curves into database table "word_curves":', CurveGenerator.insertCurvesToDB(db, curves)
 
 print '===================> End! <==================='
 print 'LimitDB - generate Curves'
