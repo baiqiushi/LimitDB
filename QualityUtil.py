@@ -120,8 +120,6 @@ def myMSE(m1, m2):
     # binarize two images
     m1 = np.where(m1 > 0, 1, 0)
     m2 = np.where(m2 > 0, 1, 0)
-    print 'm1 ==> ', m1
-    print 'm2 ==> ', m2
     err = np.sum((m1-m2)**2)
     err /= float(len(m1)*len(m1[0]))
     return math.sqrt(err)
