@@ -7,6 +7,7 @@ import os
 # k value percentage of the keyword frequency
 # 5 - 100, step = 5
 k_percentages = range(5, 100, 5)
+# k_percentages = range(1, 100, 98)
 
 
 # generate curves of p_keywords on p_table in p_db
@@ -41,6 +42,10 @@ def generateCurves(p_db, p_table, p_keywords, p_scale, p_quality_function='PH'):
         for k_percentage in k_percentages:
             if p_quality_function == 'PH':
                 similarity = QualityUtil.phQualityOfKPercentage(totalCoordinates, k_percentage, x_scale, y_scale)
+            # elif p_quality_function == 'EMD':
+            #     similarity = QualityUtil.emdQualityOfKPercentage(totalCoordinates, k_percentage, x_scale, y_scale)
+            elif p_quality_function == 'MSE':
+                similarity = QualityUtil.mseQualityOfKPercentage(totalCoordinates, k_percentage, x_scale, y_scale)
             else:
                 similarity = 0.0
             curve.append(similarity)

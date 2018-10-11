@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 # Resolution of image
 res_x = 1920/4
@@ -6,7 +7,6 @@ res_y = 1080/4
 
 
 def printInfo(p_x_scale=1, p_y_scale=1):
-    print 'quality function: Boolean Perceptual Hash'
     print 'resolution:', int(res_x/p_x_scale), 'x', int(res_y/p_y_scale)
 
 
@@ -78,3 +78,68 @@ def findKOfQuality(p_totalCoordinates, p_quality, p_x_scale=1, p_y_scale=1):
         similarity = float(sampleNumOfCells) / perfectNumOfCells
         iterTimes += 1
     return k, i
+
+
+# !!!from pyemd import emd!!!
+# m1, m2 are the matrix of the ground-truth map and approximate map
+# def myEMD(m1, m2):
+#     # Distance Matrix for EMD
+#     distMatrix = np.zeros(shape=(res_x, res_y, res_x, res_y))
+#     for i1 in range(0, res_x):
+#         for j1 in range(0, res_y):
+#             for i2 in range(0, res_x):
+#                 for j2 in range(0, res_y):
+#                     distMatrix[i1][j1][i2][j2] = (i1-i2)*(i1-i2)+(j1-j2)*(j1-j2)
+#     distMatrix = distMatrix.reshape(res_x, res_x)
+#     m1 = m1.flatten()
+#     m2 = m2.flatten()
+#     d = emd(m1, m2, distMatrix)
+#     return d
+
+
+# EMD Quality of K percentage limit image corresponding to perfect image
+# p_totalCoordinates - list of all coordinates of perfect image
+# p_k_percentage - percentage of limit k (e.g. 10 - 10%), this function will translate k% into actual k value
+# return similarity between k percentage image and perfect image, normalized to [0, 1]
+# def emdQualityOfKPercentage(p_totalCoordinates, p_k_percentage, p_x_scale=1, p_y_scale=1):
+#     totalCoordinates = np.array(p_totalCoordinates)
+#     # ground truth perfect image
+#     perfectImage = coordinatesToImage(totalCoordinates, int(res_x/p_x_scale), int(res_y/p_y_scale))
+#     # mimic limit k behavior of DB
+#     k = int(p_k_percentage * len(totalCoordinates) / 100)
+#     # limit k percentage of coordinates image
+#     kPercentageImage = coordinatesToImage(totalCoordinates[:k], int(res_x/p_x_scale), int(res_y/p_y_scale))
+#     # calculate similarity
+#     similarity = myEMD(perfectImage, kPercentageImage)
+#
+#     return similarity
+
+
+# m1, m2 are the matrix of the ground-truth map and approximate map
+def myMSE(m1, m2):
+    # binarize two images
+    m1 = np.where(m1 > 0, 1, 0)
+    m2 = np.where(m2 > 0, 1, 0)
+    print 'm1 ==> ', m1
+    print 'm2 ==> ', m2
+    err = np.sum((m1-m2)**2)
+    err /= float(len(m1)*len(m1[0]))
+    return math.sqrt(err)
+
+
+# MSE Quality of K percentage limit image corresponding to perfect image
+# p_totalCoordinates - list of all coordinates of perfect image
+# p_k_percentage - percentage of limit k (e.g. 10 - 10%), this function will translate k% into actual k value
+# return similarity between k percentage image and perfect image, normalized to [0, 1]
+def mseQualityOfKPercentage(p_totalCoordinates, p_k_percentage, p_x_scale=1, p_y_scale=1):
+    totalCoordinates = np.array(p_totalCoordinates)
+    # ground truth perfect image
+    perfectImage = coordinatesToImage(totalCoordinates, int(res_x/p_x_scale), int(res_y/p_y_scale))
+    # mimic limit k behavior of DB
+    k = int(p_k_percentage * len(totalCoordinates) / 100)
+    # limit k percentage of coordinates image
+    kPercentageImage = coordinatesToImage(totalCoordinates[:k], int(res_x/p_x_scale), int(res_y/p_y_scale))
+    # calculate similarity
+    similarity = 0.01 / myMSE(perfectImage, kPercentageImage)
+
+    return similarity
