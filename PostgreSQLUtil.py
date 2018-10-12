@@ -260,13 +260,14 @@ class PostgreSQLUtil:
         return True
 
     # query the curves of keywords in frequency range generated from p_table
-    def queryCurves(self, p_table, p_min_freq, p_max_freq):
+    def queryCurves(self, p_table, p_min_freq, p_max_freq, p_quality_function='PH'):
         l_sql = 'SELECT cv.word, q5, q10, q15, q20, ' \
                 '       q25, q30, q35, q40, q45, q50, q55,' \
                 '       q60, q65, q70, q75, q80, q85, q90, q95 ' \
                 '  FROM word_curves cv, word_counts cn' \
                 ' WHERE cv.word = cn.word' \
-                '   and cv.table_name = ' + p_table + \
+                '   and cv.table_name = \'' + p_table + '\' ' + \
+                '   and cv.quality_function = \'' + p_quality_function + '\' ' + \
                 '   and cn.frequency >= ' + str(p_min_freq) + \
                 '   and cn.frequency <= ' + str(p_max_freq) + \
                 ' ORDER BY cn.frequency DESC'
@@ -274,6 +275,18 @@ class PostgreSQLUtil:
         # convert the sub-tuples into lists
         results = map(lambda record: list(record), results)
         return results
+
+    # query the curve of given keyword
+    def queryCurve(self, p_table, p_quality_function, p_word):
+        l_sql = 'SELECT q5, q10, q15, q20, ' \
+                '       q25, q30, q35, q40, q45, q50, q55,' \
+                '       q60, q65, q70, q75, q80, q85, q90, q95 ' \
+                '  FROM word_curves ' \
+                ' WHERE table_name = \'' + p_table + '\' ' + \
+                '   and quality_function = \'' + p_quality_function + '\' ' + \
+                '   and word = \'' + p_word + '\''
+        results = self.query(l_sql)
+        return results[0]
 
     # query the keywords in frequency range
     def queryKeywords(self, p_min_freq, p_max_freq):
@@ -285,6 +298,9 @@ class PostgreSQLUtil:
         # convert the sub-tuples into one element
         results = map(lambda record: record[0], results)
         return results
+
+    def getDatabase(self):
+        return self.config['database']
 
 
 def test():
