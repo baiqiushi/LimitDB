@@ -122,7 +122,7 @@ def myMSE(m1, m2):
     m2 = np.where(m2 > 0, 1, 0)
     err = np.sum((m1-m2)**2)
     err /= float(len(m1)*len(m1[0]))
-    return math.sqrt(err)
+    return err
 
 
 # MSE Quality of K percentage limit image corresponding to perfect image
@@ -137,7 +137,12 @@ def mseQualityOfKPercentage(p_totalCoordinates, p_k_percentage, p_x_scale=1, p_y
     k = int(p_k_percentage * len(totalCoordinates) / 100)
     # limit k percentage of coordinates image
     kPercentageImage = coordinatesToImage(totalCoordinates[:k], int(res_x/p_x_scale), int(res_y/p_y_scale))
+    # For MSE similarity, first get the 0% image's MSE as base similarity
+    zeroPercentageImage = coordinatesToImage(totalCoordinates[:0], int(res_x/p_x_scale), int(res_y/p_y_scale))
+    mse_base = myMSE(perfectImage, zeroPercentageImage)
+    # Then get the k percent images' MSE
+    mse = myMSE(perfectImage, kPercentageImage)
     # calculate similarity
-    similarity = 0.01 / myMSE(perfectImage, kPercentageImage)
+    similarity = 1.0 - (mse / mse_base)
 
     return similarity
