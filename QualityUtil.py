@@ -118,8 +118,8 @@ def findKOfQuality(p_totalCoordinates, p_quality, p_x_scale=1, p_y_scale=1):
 # m1, m2 are the matrix of the ground-truth map and approximate map
 def myMSE(m1, m2):
     # binarize two images
-    m1 = np.where(m1 > 0, 1, 0)
-    m2 = np.where(m2 > 0, 1, 0)
+    # m1 = np.where(m1 > 0, 1, 0)
+    # m2 = np.where(m2 > 0, 1, 0)
     err = np.sum((m1-m2)**2)
     err /= float(len(m1)*len(m1[0]))
     return err
@@ -140,8 +140,10 @@ def mseQualityOfKPercentage(p_totalCoordinates, p_k_percentage, p_x_scale=1, p_y
     # For MSE similarity, first get the 0% image's MSE as base similarity
     zeroPercentageImage = coordinatesToImage(totalCoordinates[:0], int(res_x/p_x_scale), int(res_y/p_y_scale))
     mse_base = myMSE(perfectImage, zeroPercentageImage)
+    # print 'mse_base', mse_base
     # Then get the k percent images' MSE
     mse = myMSE(perfectImage, kPercentageImage)
+    # print 'mse', mse
     # calculate similarity
     similarity = 1.0 - (mse / mse_base)
 
