@@ -21,8 +21,7 @@ dbtype = args.dbtype
 
 pdfBasePath = '.'
 fileName = 'curves-on-datasize.pdf'
-# labels = ['10M', '100M', '200M']
-labels = ['soccer', 'hire']
+labels = ['10M', '100M', '200M']
 # x axis is the same as k_percentages
 x = range(5, 100, 5)
 # Same keyword - soccer
