@@ -193,3 +193,11 @@ POSTGRESQL_DUMMY_SQL = 'Select count(1) from ' \
 POSTGRESQL_DUMMY_SQL_TEMP = 'Select count(1) from ' \
                             '(select t.text from dummy_table t where t.id < 799999999999999999) p ' \
                             'where p.text like '
+
+# Oracle config
+ORACLE_CONFIG = {
+    'connectStr': 'system/Oracle123@localhost/orcl'
+}
+
+
+

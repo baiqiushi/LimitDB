@@ -21,7 +21,7 @@ import Conf
 parser = argparse.ArgumentParser(description='Generate curves for given keywords '
                                              'within list or in given frequency range.')
 parser.add_argument('-d', '--dbtype', help='target database type',
-                    choices=['PostgreSQL', 'MySQL', 'AsterixDB'], default='PostgreSQL', required=False)
+                    choices=['PostgreSQL', 'AsterixDB', 'Oracle'], default='PostgreSQL', required=False)
 parser.add_argument('-b', '--database', help='database: target database connect to', required=False)
 parser.add_argument('-t', '--table', help='table: target table name', required=True)
 parser.add_argument('-f1', '--min_freq', help='min_freq: min frequency of the keywords we choose', required=False)
