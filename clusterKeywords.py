@@ -37,6 +37,8 @@ parser.add_argument('-f1', '--min_freq', help='min_freq: min frequency of the ke
 parser.add_argument('-f2', '--max_freq', help='max_freq: max frequency of the keywords we choose', required=True)
 parser.add_argument('-k', '--kmeans', help='kmeans: # of groups for k-means algorithm', required=False,
                     default=10)
+parser.add_argument('-ce', '--curve_exists', help='curve_exists: ? if YES/yes/Y/y, then skip the curves generation phase.',
+                    required=False, default='no')
 args = parser.parse_args()
 
 dbtype = args.dbtype
@@ -49,9 +51,10 @@ sample_mode = args.mode
 text_attr = args.attribute
 min_freq = args.min_freq
 max_freq = args.max_freq
-k = args.kmeans
+k = int(args.kmeans)
+curve_exists = args.curve_exists
 # calculate the scale factors according to sample percentage
-scale_factor = math.floor(100 / sample_percentage)
+scale_factor = math.floor(100 / int(sample_percentage))
 scale_x = math.floor(math.sqrt(scale_factor))
 scale_y = math.floor(math.sqrt(scale_factor))
 scale = [scale_x, scale_y]
@@ -104,16 +107,20 @@ keywords = KeywordsUtil.pickInFrequencyRange(db, min_freq, max_freq)
 print 'Keywords handled:', keywords
 
 # 3. (4) Generate Curves on sample table
-t4 = time.time()
-sample_curves = CurveGenerator.generateCurves(db, sample_table, keywords, scale)
-t5 = time.time()
-times['curve'] = t5 - t4
-print '[Time] Curves generation:', t5 - t4, ', Totally:', time.time() - t0
-# write curves to csv file
-csvFile = CurveGenerator.writeCurvesToCSV(sample_table, sample_curves, csvBasePath)
-print 'Write the curves to csv file:', csvFile
-# load curves into database table 'word_curves'
-print 'Load the curves into database table "word_curves":', CurveGenerator.loadCurvesCSVToDB(db, csvFile)
+if curve_exists != 'YES' and curve_exists != 'yes' and curve_exists != 'Y' and curve_exists != 'y':
+    t4 = time.time()
+    sample_curves = CurveGenerator.generateCurves(db, sample_table, keywords, scale)
+    t5 = time.time()
+    times['curve'] = t5 - t4
+    print '[Time] Curves generation:', t5 - t4, ', Totally:', time.time() - t0
+    # write curves to csv file
+    csvFile = CurveGenerator.writeCurvesToCSV(sample_table, sample_curves, csvBasePath)
+    print 'Write the curves to csv file:', csvFile
+    # insert curves into database table 'word_curves'
+    print 'Insert the curves into database table "word_curves":', CurveGenerator.insertCurvesToDB(db, sample_curves)
+    # load curves into database table 'word_curves'
+    # print 'Load the curves into database table "word_curves":', CurveGenerator.loadCurvesCSVToDB(db, csvFile)
+
 
 # 3. (5) Cluster the curves of keywords
 t6 = time.time()
@@ -124,8 +131,10 @@ print '[Time] Curves clustering:', t7 - t6, ', Totally:', time.time() - t0
 # write labeled keywords to csv file
 csvFile = KeywordsClusterer.writeLabeledKeywordsToCSV(sample_table, min_freq, max_freq, labeled_curves, csvBasePath, k)
 print 'Write the labeled keywords to csv file:', csvFile
+# insert labeled keywords into database table 'word_clusters'
+print 'insert the labeled keywords into database table "word_clusters":', KeywordsClusterer.insertClustersCSVToDB(db, csvFile)
 # load labeled keywords into database table 'word_clusters'
-print 'Load the labeled keywords into database table "word_clusters":', KeywordsClusterer.loadCurvesCSVToDB(db, csvFile)
+# print 'Load the labeled keywords into database table "word_clusters":', KeywordsClusterer.loadClustersCSVToDB(db, csvFile)
 
 print '----------------------------------------------'
 print times.keys()

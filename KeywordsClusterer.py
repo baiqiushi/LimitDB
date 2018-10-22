@@ -67,6 +67,18 @@ def writeLabeledKeywordsToCSV(p_table, p_min_freq, p_max_freq, p_labeled_curves,
 # load the clustered keywords csv file into database
 # p_db: database handle
 # p_csvFile: absolute path for the csv file returned by the writeLabeledKeywordsToCSV function in this file
-def loadCurvesCSVToDB(p_db, p_csvFile):
+def loadClustersCSVToDB(p_db, p_csvFile):
     return p_db.loadCSVToTable(os.path.abspath(p_csvFile), 'word_clusters')
 
+
+# insert the clustered keywords csv file into database
+# p_db: database handle
+# p_csvFile: absolute path for the csv file returned by the writeLabeledKeywordsToCSV function in this file
+def insertClustersCSVToDB(p_db, p_csvFile):
+    with open(p_csvFile, 'r') as csvFile:
+        csvReader = csv.reader(csvFile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for labeled_keyword in csvReader:
+            success = p_db.insertListToTable(labeled_keyword, 'word_clusters')
+            if not success:
+                print '[x] insert failed.'
+    return True

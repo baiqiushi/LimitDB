@@ -208,7 +208,7 @@ class PostgreSQLUtil:
     # return: sample table name, if successful, otherwise None
     def generateSample(self, p_tableName, p_percentage, p_mode='bernoulli'):
         l_sampleTableName = p_tableName + '_' + p_mode + '_' + p_percentage
-        l_sql = 'create table ' + l_sampleTableName + \
+        l_sql = 'create table if not exists ' + l_sampleTableName + \
                 ' as select * from ' + p_tableName + \
                 ' tablesample ' + p_mode + '(' + str(p_percentage) + ')'
         success = self.command(l_sql)
@@ -223,8 +223,8 @@ class PostgreSQLUtil:
     # return: index name, if successful, otherwise None
     def buildInvertedIndex(self, p_tableName, p_attribute):
         l_idxName = 'idx_' + p_tableName + '_' + p_attribute
-        l_sql = 'CREATE INDEX ' + l_idxName + \
-                'ON ' + p_tableName + \
+        l_sql = 'CREATE INDEX if not exists ' + l_idxName + \
+                ' ON ' + p_tableName + \
                 ' USING GIN(to_tsvector(\'english\'::regconfig, ' + p_attribute + '))'
         success = self.command(l_sql)
         if success:
@@ -268,9 +268,9 @@ class PostgreSQLUtil:
                 ' WHERE cv.word = cn.word' \
                 '   and cv.table_name = \'' + p_table + '\' ' + \
                 '   and cv.quality_function = \'' + p_quality_function + '\' ' + \
-                '   and cn.frequency >= ' + str(p_min_freq) + \
-                '   and cn.frequency <= ' + str(p_max_freq) + \
-                ' ORDER BY cn.frequency DESC'
+                '   and cn.cardinality >= ' + str(p_min_freq) + \
+                '   and cn.cardinality <= ' + str(p_max_freq) + \
+                ' ORDER BY cn.cardinality DESC'
         results = self.query(l_sql)
         # convert the sub-tuples into lists
         results = map(lambda record: list(record), results)
@@ -291,9 +291,9 @@ class PostgreSQLUtil:
     # query the keywords in frequency range
     def queryKeywords(self, p_min_freq, p_max_freq):
         l_sql = 'SELECT word FROM word_counts ' \
-                ' WHERE frequency >= ' + str(p_min_freq) + \
-                '   and frequency < ' + str(p_max_freq) + \
-                ' ORDER BY frequency DESC'
+                ' WHERE cardinality >= ' + str(p_min_freq) + \
+                '   and cardinality < ' + str(p_max_freq) + \
+                ' ORDER BY cardinality DESC'
         results = self.query(l_sql)
         # convert the sub-tuples into one element
         results = map(lambda record: record[0], results)
